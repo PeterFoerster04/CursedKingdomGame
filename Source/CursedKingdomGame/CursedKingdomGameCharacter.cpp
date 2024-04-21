@@ -10,6 +10,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Engine/LocalPlayer.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -39,13 +40,15 @@ ACursedKingdomGameCharacter::ACursedKingdomGameCharacter()
 	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
 
+	
 }
 
 void ACursedKingdomGameCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
+	MaxMovementSpeedDefault = GetCharacterMovement()->MaxWalkSpeed;
+	MaxSprintMovementSpeed = MaxMovementSpeedDefault * SprintMultiplier;
 	// Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -67,12 +70,14 @@ void ACursedKingdomGameCharacter::SetupPlayerInputComponent(UInputComponent* Pla
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
+	
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::Move);
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::Look);
+
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::Sprint);
 	}
 	else
 	{
@@ -88,10 +93,13 @@ void ACursedKingdomGameCharacter::Move(const FInputActionValue& Value)
 
 	if (Controller != nullptr)
 	{
+		
 		// add movement 
 		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
 		AddMovementInput(GetActorRightVector(), MovementVector.X);
 	}
+	
+
 }
 
 void ACursedKingdomGameCharacter::Look(const FInputActionValue& Value)
@@ -102,9 +110,18 @@ void ACursedKingdomGameCharacter::Look(const FInputActionValue& Value)
 	if (Controller != nullptr)
 	{
 		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
+		AddControllerYawInput(LookAxisVector.X*MouseSens);
+		AddControllerPitchInput(LookAxisVector.Y*MouseSens);
 	}
+}
+
+void ACursedKingdomGameCharacter::Sprint(const FInputActionValue& Value)
+{
+	bool sprinting = Value.Get<bool>();
+
+	GetCharacterMovement()->MaxWalkSpeed = sprinting ? MaxSprintMovementSpeed : MaxMovementSpeedDefault;
+
+	UE_LOG(LogTemp,Display,TEXT("%i"),sprinting)
 }
 
 void ACursedKingdomGameCharacter::SetHasRifle(bool bNewHasRifle)
