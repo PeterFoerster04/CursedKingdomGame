@@ -47,8 +47,11 @@ void ACursedKingdomGameCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-	MaxMovementSpeedDefault = GetCharacterMovement()->MaxWalkSpeed;
+
 	MaxSprintMovementSpeed = MaxMovementSpeedDefault * SprintMultiplier;
+
+	GetCharacterMovement()->MaxWalkSpeed = MaxMovementSpeedDefault;
+
 	// Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -57,7 +60,15 @@ void ACursedKingdomGameCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+	//UE_LOG(LogTemp,Display,TEXT("%f"),FirstPersonCameraComponent->FieldOfView)
+	FirstPersonCameraComponent->FieldOfView = WalkFOV;
+}
 
+void ACursedKingdomGameCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	ChangeFOV(DeltaSeconds);
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -89,16 +100,16 @@ void ACursedKingdomGameCharacter::SetupPlayerInputComponent(UInputComponent* Pla
 void ACursedKingdomGameCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
+	MovementVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
-		
 		// add movement 
 		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
 		AddMovementInput(GetActorRightVector(), MovementVector.X);
 	}
-	
+
+
 
 }
 
@@ -117,11 +128,25 @@ void ACursedKingdomGameCharacter::Look(const FInputActionValue& Value)
 
 void ACursedKingdomGameCharacter::Sprint(const FInputActionValue& Value)
 {
-	bool sprinting = Value.Get<bool>();
+	bIsSprinting = Value.Get<bool>();
 
-	GetCharacterMovement()->MaxWalkSpeed = sprinting ? MaxSprintMovementSpeed : MaxMovementSpeedDefault;
+	GetCharacterMovement()->MaxWalkSpeed = bIsSprinting ? MaxSprintMovementSpeed : MaxMovementSpeedDefault;
 
-	UE_LOG(LogTemp,Display,TEXT("%i"),sprinting)
+	UE_LOG(LogTemp,Display,TEXT("%i"), bIsSprinting)
+}
+
+void ACursedKingdomGameCharacter::ChangeFOV(float a_Delta)
+{
+	
+
+	if (bIsSprinting&&MovementVector.Length() > 0)
+	{
+		FirstPersonCameraComponent->FieldOfView = FMath::Lerp(FirstPersonCameraComponent->FieldOfView, SprintFOV, 2.0f*a_Delta);
+	}
+	else
+	{
+		FirstPersonCameraComponent->FieldOfView = FMath::Lerp(FirstPersonCameraComponent->FieldOfView, WalkFOV, 2.0f * a_Delta);
+	}
 }
 
 void ACursedKingdomGameCharacter::SetHasRifle(bool bNewHasRifle)

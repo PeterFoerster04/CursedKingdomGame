@@ -53,6 +53,7 @@ public:
 
 protected:
 	virtual void BeginPlay();
+	virtual  void Tick(float DeltaSeconds) override;
 
 public:
 		
@@ -69,8 +70,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess))
 	float SprintMultiplier = 2.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
+	float WalkFOV = 90.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
+	float SprintFOV = 120.0f;
+
+	FVector2D MovementVector;
+
+	bool bIsSprinting = false;
+
 	//Movement Values
-	float MaxMovementSpeedDefault;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
+	float MaxMovementSpeedDefault = 500.0f;
 	float MaxSprintMovementSpeed;
 	
 
@@ -90,6 +101,9 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 	void Sprint(const FInputActionValue& Value);
+
+
+	void ChangeFOV(float a_Delta);
 
 protected:
 	// APawn interface
