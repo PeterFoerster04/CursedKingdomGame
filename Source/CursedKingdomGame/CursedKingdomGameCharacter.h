@@ -81,13 +81,35 @@ public:
 
 	FVector2D MovementVector;
 
-	bool bIsSprinting = false;
+	
 
 	//Movement Values
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
 	float MaxMovementSpeedDefault = 500.0f;
 	float MaxSprintMovementSpeed;
+
 	
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
+	float MaxInteractRange = 500.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess))
+	bool bIsSprinting = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess))
+	float MaxStamina = 100.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess))
+	float CurrentStamina = 0.0f;
+	float StaminaSubtractionAmount = 10.0f;
+	float StaminaRechargeAmount = 5.0f;
+
+	float StaminaCooldownTime = 5.0f;
+	float StaminaCurrentCooldownTime = 0.0f;
+
+	bool bIsOnCooldown = false;
+	
+
+	void ManageStamina(float a_Delta);
 
 	/** Setter to set the bool */
 	UFUNCTION(BlueprintCallable, Category = Weapon)

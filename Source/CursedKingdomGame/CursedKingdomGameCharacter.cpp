@@ -53,6 +53,8 @@ void ACursedKingdomGameCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	MaxSprintMovementSpeed = MaxMovementSpeedDefault * SprintMultiplier;
+	CurrentStamina = MaxStamina;
+	StaminaCurrentCooldownTime = StaminaCooldownTime;
 
 	GetCharacterMovement()->MaxWalkSpeed = MaxMovementSpeedDefault;
 
@@ -73,6 +75,7 @@ void ACursedKingdomGameCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	ChangeFOV(DeltaSeconds);
+	ManageStamina(DeltaSeconds);
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -134,6 +137,11 @@ void ACursedKingdomGameCharacter::Look(const FInputActionValue& Value)
 
 void ACursedKingdomGameCharacter::Sprint(const FInputActionValue& Value)
 {
+	if (bIsOnCooldown) {
+		bIsSprinting = false;
+		return;
+	}
+
 	bIsSprinting = Value.Get<bool>();
 
 	GetCharacterMovement()->MaxWalkSpeed = bIsSprinting ? MaxSprintMovementSpeed : MaxMovementSpeedDefault;
@@ -147,7 +155,7 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 
 	FHitResult Hit;
 	FVector TraceStart = FirstPersonCameraComponent->GetComponentLocation();
-	FVector TraceEnd = FirstPersonCameraComponent->GetComponentLocation() + FirstPersonCameraComponent->GetForwardVector() * 1000.0f;
+	FVector TraceEnd = FirstPersonCameraComponent->GetComponentLocation() + FirstPersonCameraComponent->GetForwardVector() * MaxInteractRange;
 
 	//ignore own actor
 	FCollisionQueryParams QueryParams;
@@ -183,6 +191,38 @@ void ACursedKingdomGameCharacter::ChangeFOV(float a_Delta)
 	{
 		FirstPersonCameraComponent->FieldOfView = FMath::Lerp(FirstPersonCameraComponent->FieldOfView, WalkFOV, FOVTransitionSpeed * a_Delta);
 	}
+}
+
+void ACursedKingdomGameCharacter::ManageStamina(float a_Delta)
+{
+
+	if(bIsSprinting&&!bIsOnCooldown)
+	{
+		CurrentStamina -= a_Delta * StaminaSubtractionAmount;
+	}
+	else if(!bIsOnCooldown)
+	{
+		CurrentStamina += a_Delta * StaminaRechargeAmount;
+		if (CurrentStamina > MaxStamina) CurrentStamina = MaxStamina;
+	}
+	if(CurrentStamina <=0&&!bIsOnCooldown)
+	{
+		CurrentStamina = 0;
+		bIsOnCooldown = true;
+		bIsSprinting = false;
+		GetCharacterMovement()->MaxWalkSpeed = MaxMovementSpeedDefault;
+	}
+	if(bIsOnCooldown)
+	{
+		StaminaCurrentCooldownTime -= a_Delta;
+	}
+	if(StaminaCurrentCooldownTime <=0)
+	{
+		StaminaCurrentCooldownTime = StaminaCooldownTime;
+		bIsOnCooldown = false;
+	}
+
+	
 }
 
 void ACursedKingdomGameCharacter::SetHasRifle(bool bNewHasRifle)
