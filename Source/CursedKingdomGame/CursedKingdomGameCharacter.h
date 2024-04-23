@@ -37,16 +37,15 @@ class ACursedKingdomGameCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
 
-
-
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
 
-	
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* SprintAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* InteractAction;
 
 public:
 	ACursedKingdomGameCharacter();
@@ -61,6 +60,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+	UPROPERTY()
+	UWorld* CurrentWorld;
+
 	/** Bool for AnimBP to switch to another animation set */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	bool bHasRifle;
@@ -74,6 +76,8 @@ public:
 	float WalkFOV = 90.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
 	float SprintFOV = 120.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
+	float FOVTransitionSpeed = 1.5f;
 
 	FVector2D MovementVector;
 
@@ -93,6 +97,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Weapon)
 	bool GetHasRifle();
 
+
+
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -101,6 +107,8 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 	void Sprint(const FInputActionValue& Value);
+
+	void Interact(const FInputActionValue& Value);
 
 
 	void ChangeFOV(float a_Delta);

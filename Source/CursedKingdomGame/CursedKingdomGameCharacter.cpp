@@ -40,7 +40,11 @@ ACursedKingdomGameCharacter::ACursedKingdomGameCharacter()
 	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
 
-	
+	CurrentWorld = GetWorld();
+	if(CurrentWorld ==nullptr)
+	{
+		UE_LOG(LogTemp,Display,TEXT("Failed to get world"))
+	}
 }
 
 void ACursedKingdomGameCharacter::BeginPlay()
@@ -89,6 +93,8 @@ void ACursedKingdomGameCharacter::SetupPlayerInputComponent(UInputComponent* Pla
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::Look);
 
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::Sprint);
+
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::Interact);
 	}
 	else
 	{
@@ -135,17 +141,47 @@ void ACursedKingdomGameCharacter::Sprint(const FInputActionValue& Value)
 	UE_LOG(LogTemp,Display,TEXT("%i"), bIsSprinting)
 }
 
+void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp,Display,TEXT("Interact press"))
+
+	FHitResult Hit;
+	FVector TraceStart = FirstPersonCameraComponent->GetComponentLocation();
+	FVector TraceEnd = FirstPersonCameraComponent->GetComponentLocation() + FirstPersonCameraComponent->GetForwardVector() * 1000.0f;
+
+	//ignore own actor
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	
+	CurrentWorld->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Pawn, QueryParams);
+
+	
+	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 10.0f);
+	
+
+	// If the trace hit something, bBlockingHit will be true,
+	// and its fields will be filled with detailed info about what was hit
+	if (Hit.bBlockingHit && IsValid(Hit.GetActor()))
+	{
+		UE_LOG(LogTemp, Log, TEXT("Trace hit actor: %s"), *Hit.GetActor()->GetName());
+	}
+	else {
+		UE_LOG(LogTemp, Log, TEXT("No Actors were hit"));
+	}
+}
+
 void ACursedKingdomGameCharacter::ChangeFOV(float a_Delta)
 {
 	
 
 	if (bIsSprinting&&MovementVector.Length() > 0)
 	{
-		FirstPersonCameraComponent->FieldOfView = FMath::Lerp(FirstPersonCameraComponent->FieldOfView, SprintFOV, 2.0f*a_Delta);
+		FirstPersonCameraComponent->FieldOfView = FMath::Lerp(FirstPersonCameraComponent->FieldOfView, SprintFOV, FOVTransitionSpeed*a_Delta);
 	}
 	else
 	{
-		FirstPersonCameraComponent->FieldOfView = FMath::Lerp(FirstPersonCameraComponent->FieldOfView, WalkFOV, 2.0f * a_Delta);
+		FirstPersonCameraComponent->FieldOfView = FMath::Lerp(FirstPersonCameraComponent->FieldOfView, WalkFOV, FOVTransitionSpeed * a_Delta);
 	}
 }
 
