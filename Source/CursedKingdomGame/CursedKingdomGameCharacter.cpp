@@ -45,6 +45,10 @@ ACursedKingdomGameCharacter::ACursedKingdomGameCharacter()
 	{
 		UE_LOG(LogTemp,Display,TEXT("Failed to get world"))
 	}
+
+	ItemStoreSpot = CreateDefaultSubobject<USceneComponent>("ItemStoreSpot");
+	ItemStoreSpot->SetupAttachment(RootComponent);
+
 }
 
 void ACursedKingdomGameCharacter::BeginPlay()
