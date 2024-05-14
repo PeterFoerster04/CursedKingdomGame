@@ -18,8 +18,11 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	TArray<AActor*> Items;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
+	int InventorySize = 5;
 
-	;
+
+	
 
 
 

@@ -72,6 +72,7 @@ void ACursedKingdomGameCharacter::BeginPlay()
 	}
 	//UE_LOG(LogTemp,Display,TEXT("%f"),FirstPersonCameraComponent->FieldOfView)
 	FirstPersonCameraComponent->FieldOfView = WalkFOV;
+
 }
 
 void ACursedKingdomGameCharacter::Tick(float DeltaSeconds)
