@@ -9,6 +9,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Inventory.h"
+#include "Item.h"
 #include "Engine/LocalPlayer.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -48,7 +50,11 @@ ACursedKingdomGameCharacter::ACursedKingdomGameCharacter()
 
 	ItemStoreSpot = CreateDefaultSubobject<USceneComponent>("ItemStoreSpot");
 	ItemStoreSpot->SetupAttachment(RootComponent);
+	ItemHoldSpot = CreateDefaultSubobject<USceneComponent>("ItemHoldSpot");
+	ItemHoldSpot->SetupAttachment(FirstPersonCameraComponent);
+	PlayerInventory = CreateDefaultSubobject<UInventory>("Inventory");
 
+	PlayerInventory->Player = this;
 }
 
 void ACursedKingdomGameCharacter::BeginPlay()
@@ -151,12 +157,12 @@ void ACursedKingdomGameCharacter::Sprint(const FInputActionValue& Value)
 
 	GetCharacterMovement()->MaxWalkSpeed = bIsSprinting ? MaxSprintMovementSpeed : MaxMovementSpeedDefault;
 
-	UE_LOG(LogTemp,Display,TEXT("%i"), bIsSprinting)
+	//UE_LOG(LogTemp,Display,TEXT("%i"), bIsSprinting)
 }
 
 void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp,Display,TEXT("Interact press"))
+	//UE_LOG(LogTemp,Display,TEXT("Interact press"))
 
 	FHitResult Hit;
 	FVector TraceStart = FirstPersonCameraComponent->GetComponentLocation();
@@ -166,12 +172,8 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(this);
 
-	
 	CurrentWorld->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Pawn, QueryParams);
-
-	
 	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 10.0f);
-	
 
 	// If the trace hit something, bBlockingHit will be true,
 	// and its fields will be filled with detailed info about what was hit
@@ -181,6 +183,13 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 	}
 	else {
 		UE_LOG(LogTemp, Log, TEXT("No Actors were hit"));
+	}
+	AItem* PossibleItem = Cast<AItem>(Hit.GetActor());
+	if (PossibleItem)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Picked Up Actor: %s"), *PossibleItem->GetName());
+		PlayerInventory->AddItem(PossibleItem);
+
 	}
 }
 

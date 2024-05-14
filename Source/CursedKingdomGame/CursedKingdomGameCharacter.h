@@ -7,6 +7,7 @@
 #include "Logging/LogMacros.h"
 #include "CursedKingdomGameCharacter.generated.h"
 
+class UInventory;
 class UInputComponent;
 class USkeletalMeshComponent;
 class UCameraComponent;
@@ -121,7 +122,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	USceneComponent* ItemStoreSpot;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
+	USceneComponent* ItemHoldSpot;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
+	UInventory* PlayerInventory;
 
 protected:
 	/** Called for movement input */
