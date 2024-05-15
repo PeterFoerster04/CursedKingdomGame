@@ -8,6 +8,7 @@
 #include "Inventory.generated.h"
 
 
+class AItem;
 class ACursedKingdomGameCharacter;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -21,14 +22,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	int InventorySize = 5;
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
-	TCircularQueue<AActor*> ItemBundle = TCircularQueue<AActor*>(InventorySize + 1);
+	TCircularQueue<AItem*> ItemBundle = TCircularQueue<AItem*>(InventorySize + 1);
 	
 
 	void InitInventory();
-	void AddItem(AActor* a_ItemToAdd);
-	void RemoveItem(AActor* a_ItemToAdd);
-	void DeactivateItem(AActor* a_ItemToAdd);
-	void ActivateItem(AActor* a_Item);
+	void AddItem(AItem* a_ItemToAdd);
+	void RemoveItem(AItem* a_ItemToAdd);
+	void DeactivateItem(AItem* a_ItemToAdd);
+	void ActivateItem(AItem* a_Item);
 
 	UPROPERTY()
 	ACursedKingdomGameCharacter* Player;

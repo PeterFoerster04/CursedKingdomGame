@@ -4,6 +4,7 @@
 #include "Inventory.h"
 
 #include "CursedKingdomGameCharacter.h"
+#include "Item.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
@@ -20,7 +21,7 @@ void UInventory::InitInventory()
 {
 }
 
-void UInventory::AddItem(AActor* a_ItemToAdd)
+void UInventory::AddItem(AItem* a_ItemToAdd)
 {
 	if(ItemBundle.Count()<static_cast<uint32>(InventorySize))
 	{
@@ -31,21 +32,23 @@ void UInventory::AddItem(AActor* a_ItemToAdd)
 	
 }
 
-void UInventory::RemoveItem(AActor* a_ItemToAdd)
+void UInventory::RemoveItem(AItem* a_ItemToAdd)
 {
 }
 
-void UInventory::DeactivateItem(AActor* a_ItemToAdd)
+void UInventory::DeactivateItem(AItem* a_ItemToAdd)
 {
 	if (Player == nullptr) return;
 	UE_LOG(LogTemp, Log, TEXT("Item Deactivated"));
-
-	a_ItemToAdd->SetActorLocation(Player->ItemStoreSpot->GetComponentLocation());
+	a_ItemToAdd->Mesh->SetSimulatePhysics(false);
+	a_ItemToAdd->Mesh->AttachToComponent(Player->GetMesh(), FAttachmentTransformRules::KeepWorldTransform);
 	a_ItemToAdd->SetActorEnableCollision(false);
-	a_ItemToAdd->SetActorHiddenInGame(true);
+	a_ItemToAdd->Mesh->SetWorldLocation(Player->ItemStoreSpot->GetComponentLocation());
+	//a_ItemToAdd->SetActorHiddenInGame(true);
+	
 }
 
-void UInventory::ActivateItem(AActor* a_Item)
+void UInventory::ActivateItem(AItem* a_Item)
 {
 }
 
