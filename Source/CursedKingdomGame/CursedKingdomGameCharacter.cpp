@@ -109,6 +109,8 @@ void ACursedKingdomGameCharacter::SetupPlayerInputComponent(UInputComponent* Pla
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::Sprint);
 
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::Interact);
+
+		EnhancedInputComponent->BindAction(ItemSwapAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::SwapItem);
 	}
 	else
 	{
@@ -185,19 +187,33 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 		UE_LOG(LogTemp, Log, TEXT("No Actors were hit"));
 	}
 	AItem* PossibleItem = Cast<AItem>(Hit.GetActor());
-	
-	AActor* actor = Hit.GetActor();
-
-	actor->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-	//if (PossibleItem)
-	//{
-	//	UE_LOG(LogTemp, Log, TEXT("Picked Up Actor: %s"), *PossibleItem->GetName());
-	//	//PossibleItem->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-	//	PlayerInventory->AddItem(PossibleItem);
-
-	//}
 
 	
+	if (PossibleItem != nullptr)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Picked Up Actor: %s"), *PossibleItem->GetName());
+		PossibleItem->Mesh->SetSimulatePhysics(false);
+		PossibleItem->AttachToComponent(ItemHoldSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		PlayerInventory->AddItem(PossibleItem);
+	}
+
+	
+}
+
+void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
+{
+	float scroll = Value.Get<float>();
+	
+
+	if ((scroll < 0 && PlayerInventory->CurrentItemOutIndex == 0) ||
+		(scroll > 0 && PlayerInventory->CurrentItemOutIndex == PlayerInventory->InventorySize - 1)) return;
+	else if (scroll > 0) PlayerInventory->CurrentItemOutIndex++;
+	else if (scroll < 0) PlayerInventory->CurrentItemOutIndex--;
+
+	UE_LOG(LogTemp, Display, TEXT("%i"), PlayerInventory->CurrentItemOutIndex)
+	/*PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->AttachToComponent(ItemHoldSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	*/
 }
 
 void ACursedKingdomGameCharacter::ChangeFOV(float a_Delta)

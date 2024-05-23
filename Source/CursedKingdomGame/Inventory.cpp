@@ -23,11 +23,12 @@ void UInventory::InitInventory()
 
 void UInventory::AddItem(AItem* a_ItemToAdd)
 {
-	if(ItemBundle.Count()<static_cast<uint32>(InventorySize))
+
+	if(ItemBundle.Num()<InventorySize)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Added Item To Inventory: %s"), *a_ItemToAdd->GetName());
 		DeactivateItem(a_ItemToAdd);
-		ItemBundle.Enqueue(a_ItemToAdd);
+		ItemBundle.Add(a_ItemToAdd);
 	}
 	
 }
@@ -38,18 +39,21 @@ void UInventory::RemoveItem(AItem* a_ItemToAdd)
 
 void UInventory::DeactivateItem(AItem* a_ItemToAdd)
 {
+
 	if (Player == nullptr) return;
 	UE_LOG(LogTemp, Log, TEXT("Item Deactivated"));
-	a_ItemToAdd->Mesh->SetSimulatePhysics(false);
-	a_ItemToAdd->AttachToComponent(Player->ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 	a_ItemToAdd->SetActorEnableCollision(false);
-	a_ItemToAdd->Mesh->SetWorldLocation(Player->ItemStoreSpot->GetComponentLocation());
-	//a_ItemToAdd->SetActorHiddenInGame(true);
 	
 }
 
 void UInventory::ActivateItem(AItem* a_Item)
 {
+}
+
+void UInventory::MoveItemToHand(int a_InOrDecrement)
+{
+	
+
 }
 
 

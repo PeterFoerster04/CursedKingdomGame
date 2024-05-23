@@ -48,6 +48,9 @@ class ACursedKingdomGameCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* InteractAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ItemSwapAction;
+
 public:
 	ACursedKingdomGameCharacter();
 
@@ -137,6 +140,8 @@ protected:
 	void Sprint(const FInputActionValue& Value);
 
 	void Interact(const FInputActionValue& Value);
+
+	void SwapItem(const FInputActionValue& Value);
 
 
 	void ChangeFOV(float a_Delta);

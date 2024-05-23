@@ -21,8 +21,8 @@ public:
 	UInventory();
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	int InventorySize = 5;
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
-	TCircularQueue<AItem*> ItemBundle = TCircularQueue<AItem*>(InventorySize + 1);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
+	TArray<AItem*> ItemBundle;
 	
 
 	void InitInventory();
@@ -30,9 +30,12 @@ public:
 	void RemoveItem(AItem* a_ItemToAdd);
 	void DeactivateItem(AItem* a_ItemToAdd);
 	void ActivateItem(AItem* a_Item);
+	void MoveItemToHand(int a_InOrDecrement);
 
 	UPROPERTY()
 	ACursedKingdomGameCharacter* Player;
+
+	int CurrentItemOutIndex = 0;
 
 protected:
 	// Called when the game starts
