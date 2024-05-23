@@ -41,7 +41,7 @@ void UInventory::DeactivateItem(AItem* a_ItemToAdd)
 	if (Player == nullptr) return;
 	UE_LOG(LogTemp, Log, TEXT("Item Deactivated"));
 	a_ItemToAdd->Mesh->SetSimulatePhysics(false);
-	a_ItemToAdd->Mesh->AttachToComponent(Player->GetMesh(), FAttachmentTransformRules::KeepWorldTransform);
+	a_ItemToAdd->AttachToComponent(Player->ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 	a_ItemToAdd->SetActorEnableCollision(false);
 	a_ItemToAdd->Mesh->SetWorldLocation(Player->ItemStoreSpot->GetComponentLocation());
 	//a_ItemToAdd->SetActorHiddenInGame(true);

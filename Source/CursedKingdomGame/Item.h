@@ -15,7 +15,7 @@ public:
 	// Sets default values for this actor's properties
 	AItem();
 
-	UPROPERTY(EditAnywhere,Category = Comps, meta= (AllowPrivateAccess))
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = Comps, meta= (AllowPrivateAccess))
 	UStaticMeshComponent* Mesh;
 
 protected:

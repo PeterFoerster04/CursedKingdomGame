@@ -177,7 +177,7 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 
 	// If the trace hit something, bBlockingHit will be true,
 	// and its fields will be filled with detailed info about what was hit
-	if (Hit.bBlockingHit && IsValid(Hit.GetActor()))
+	if (Hit.bBlockingHit && Hit.GetActor() != nullptr)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Trace hit actor: %s"), *Hit.GetActor()->GetName());
 	}
@@ -185,12 +185,19 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 		UE_LOG(LogTemp, Log, TEXT("No Actors were hit"));
 	}
 	AItem* PossibleItem = Cast<AItem>(Hit.GetActor());
-	if (PossibleItem)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Picked Up Actor: %s"), *PossibleItem->GetName());
-		PlayerInventory->AddItem(PossibleItem);
+	
+	AActor* actor = Hit.GetActor();
 
-	}
+	actor->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	//if (PossibleItem)
+	//{
+	//	UE_LOG(LogTemp, Log, TEXT("Picked Up Actor: %s"), *PossibleItem->GetName());
+	//	//PossibleItem->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	//	PlayerInventory->AddItem(PossibleItem);
+
+	//}
+
+	
 }
 
 void ACursedKingdomGameCharacter::ChangeFOV(float a_Delta)
