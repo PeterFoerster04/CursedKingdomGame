@@ -111,6 +111,10 @@ void ACursedKingdomGameCharacter::SetupPlayerInputComponent(UInputComponent* Pla
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::Interact);
 
 		EnhancedInputComponent->BindAction(ItemSwapAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::SwapItem);
+
+		EnhancedInputComponent->BindAction(ItemDropAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::DropItem);
+
+		EnhancedInputComponent->BindAction(ItemThrowAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::ThrowItem);
 	}
 	else
 	{
@@ -189,31 +193,78 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 	AItem* PossibleItem = Cast<AItem>(Hit.GetActor());
 
 	
-	if (PossibleItem != nullptr)
+	if (PossibleItem != nullptr && !PlayerInventory->CheckInventoryFull())
 	{
 		UE_LOG(LogTemp, Log, TEXT("Picked Up Actor: %s"), *PossibleItem->GetName());
 		PossibleItem->Mesh->SetSimulatePhysics(false);
-		PossibleItem->AttachToComponent(ItemHoldSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		PossibleItem->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		PlayerInventory->AddItem(PossibleItem);
+	}
+	else if(PlayerInventory->CheckInventoryFull())
+	{
+		UE_LOG(LogTemp, Log, TEXT("Inventory Full"));
 	}
 
 	
 }
 
+//sadly attaching actors with physics via code without complications can only be achieved by attaching in this script
+//thats why the move item function seems kind of useless now
 void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 {
 	float scroll = Value.Get<float>();
-	
 
+	//if scrolling gets out of range of (into negative or max inventory size) return
 	if ((scroll < 0 && PlayerInventory->CurrentItemOutIndex == 0) ||
 		(scroll > 0 && PlayerInventory->CurrentItemOutIndex == PlayerInventory->InventorySize - 1)) return;
-	else if (scroll > 0) PlayerInventory->CurrentItemOutIndex++;
+
+	if (PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
+	{
+		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->
+		AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		PlayerInventory->MoveItem();
+	}
+	
+	//in-decrementing the index for item to pull out
+	if (scroll > 0) PlayerInventory->CurrentItemOutIndex++;
 	else if (scroll < 0) PlayerInventory->CurrentItemOutIndex--;
 
+	if (PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
+	{
+		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->
+		AttachToComponent(ItemHoldSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		PlayerInventory->MoveItem(false);
+	}
+	
 	UE_LOG(LogTemp, Display, TEXT("%i"), PlayerInventory->CurrentItemOutIndex)
-	/*PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-	PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->AttachToComponent(ItemHoldSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-	*/
+	
+	
+}
+
+void ACursedKingdomGameCharacter::DropItem(const FInputActionValue& Value)
+{
+	float input = Value.Get<float>();
+
+	if(PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
+	{
+		PlayerInventory->ActivateItem();
+	}
+
+	//UE_LOG(LogTemp, Display, TEXT("%f"), input)
+}
+
+void ACursedKingdomGameCharacter::ThrowItem(const FInputActionValue& Value)
+{
+	
+	float input = Value.Get<float>();
+
+	if (PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
+	{
+		PlayerInventory->ActivateItem(true,FirstPersonCameraComponent->GetForwardVector(),ThrowForce);
+
+	}
+	
+	//UE_LOG(LogTemp, Display, TEXT("%f"), input)
 }
 
 void ACursedKingdomGameCharacter::ChangeFOV(float a_Delta)

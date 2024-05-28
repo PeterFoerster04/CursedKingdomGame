@@ -28,9 +28,13 @@ public:
 	void InitInventory();
 	void AddItem(AItem* a_ItemToAdd);
 	void RemoveItem(AItem* a_ItemToAdd);
+
 	void DeactivateItem(AItem* a_ItemToAdd);
-	void ActivateItem(AItem* a_Item);
-	void MoveItemToHand(int a_InOrDecrement);
+	void ActivateItem(bool a_bUseForce = false, FVector a_ThrowDirection = FVector::ZeroVector, float a_Force = 0.0f);
+
+	void MoveItem(bool a_ToBack = true);
+	bool CheckInventoryFull();
+	bool DoesInvHaveItemAtIndex(int a_Index);
 
 	UPROPERTY()
 	ACursedKingdomGameCharacter* Player;

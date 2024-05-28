@@ -51,6 +51,13 @@ class ACursedKingdomGameCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* ItemSwapAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ItemDropAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ItemThrowAction;
+
+
 public:
 	ACursedKingdomGameCharacter();
 
@@ -92,7 +99,8 @@ public:
 	float MaxMovementSpeedDefault = 500.0f;
 	float MaxSprintMovementSpeed;
 
-	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
+	float ThrowForce = 5.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
 	float MaxInteractRange = 500.0f;
@@ -111,7 +119,7 @@ public:
 	float StaminaCurrentCooldownTime = 0.0f;
 
 	bool bIsOnCooldown = false;
-	
+	bool bTestBool = false;
 
 	void ManageStamina(float a_Delta);
 
@@ -143,6 +151,9 @@ protected:
 
 	void SwapItem(const FInputActionValue& Value);
 
+	void DropItem(const FInputActionValue& Value);
+
+	void ThrowItem(const FInputActionValue& Value);
 
 	void ChangeFOV(float a_Delta);
 
