@@ -134,7 +134,11 @@ void ACursedKingdomGameCharacter::Move(const FInputActionValue& Value)
 		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
 		AddMovementInput(GetActorRightVector(), MovementVector.X);
 	}
-
+	if(MovementVector == FVector2D::ZeroVector)
+	{
+		bIsSprinting = false;
+		GetCharacterMovement()->MaxWalkSpeed = MaxMovementSpeedDefault;
+	}
 
 
 }
