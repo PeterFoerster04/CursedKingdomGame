@@ -7,6 +7,8 @@
 #include "Item.h"
 #include "RecipeList.h"
 #include "Components/SphereComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 
 // Sets default values
@@ -52,7 +54,15 @@ void ACauldron::OnSphereTriggerOverlap(UPrimitiveComponent* OverlappedComponent,
 	else if (OtherActor != nullptr && OtherActor->IsA(AItem::StaticClass()))
 	{
 		UE_LOG(LogTemp, Display, TEXT("Item Overlap"))
+		OtherActor->Destroy();
+		Explode();
 	}
 
+}
+
+void ACauldron::Explode()
+{
+	if (ExplosionSystem == nullptr) return;
+	UNiagaraFunctionLibrary::SpawnSystemAttached(ExplosionSystem, Mesh, NAME_None, ExplosionSpawnOffset, FRotator(0.f), EAttachLocation::Type::KeepRelativeOffset, true);
 }
 

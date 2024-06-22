@@ -157,6 +157,9 @@ protected:
 
 	void ChangeFOV(float a_Delta);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnItemSwap();
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;

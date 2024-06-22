@@ -134,7 +134,11 @@ void ACursedKingdomGameCharacter::Move(const FInputActionValue& Value)
 		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
 		AddMovementInput(GetActorRightVector(), MovementVector.X);
 	}
-
+	if(MovementVector == FVector2D::ZeroVector)
+	{
+		bIsSprinting = false;
+		GetCharacterMovement()->MaxWalkSpeed = MaxMovementSpeedDefault;
+	}
 
 
 }
@@ -196,6 +200,7 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 	if (PossibleItem != nullptr && !PlayerInventory->CheckInventoryFull())
 	{
 		UE_LOG(LogTemp, Log, TEXT("Picked Up Actor: %s"), *PossibleItem->GetName());
+		PossibleItem->OnItemPickUp();
 		PossibleItem->Mesh->SetSimulatePhysics(false);
 		PossibleItem->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		PlayerInventory->AddItem(PossibleItem);
@@ -247,6 +252,7 @@ void ACursedKingdomGameCharacter::DropItem(const FInputActionValue& Value)
 
 	if(PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
 	{
+		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->OnItemDrop();
 		PlayerInventory->ActivateItem();
 	}
 
@@ -260,6 +266,7 @@ void ACursedKingdomGameCharacter::ThrowItem(const FInputActionValue& Value)
 
 	if (PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
 	{
+		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->OnItemThrow();
 		PlayerInventory->ActivateItem(true,FirstPersonCameraComponent->GetForwardVector(),ThrowForce);
 
 	}
