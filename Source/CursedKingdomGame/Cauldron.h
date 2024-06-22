@@ -30,7 +30,10 @@ public:
 	//spawn this every time cauldron explodes
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
 	UNiagaraSystem* ExplosionSystem;
-	
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effects, meta = (AllowPrivateAccess))
+		FVector ExplosionSpawnOffset;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

@@ -54,6 +54,7 @@ void ACauldron::OnSphereTriggerOverlap(UPrimitiveComponent* OverlappedComponent,
 	else if (OtherActor != nullptr && OtherActor->IsA(AItem::StaticClass()))
 	{
 		UE_LOG(LogTemp, Display, TEXT("Item Overlap"))
+		OtherActor->Destroy();
 		Explode();
 	}
 
@@ -62,6 +63,6 @@ void ACauldron::OnSphereTriggerOverlap(UPrimitiveComponent* OverlappedComponent,
 void ACauldron::Explode()
 {
 	if (ExplosionSystem == nullptr) return;
-	UNiagaraFunctionLibrary::SpawnSystemAttached(ExplosionSystem, Mesh, NAME_None, FVector(0.f), FRotator(0.f), EAttachLocation::Type::KeepRelativeOffset, true);
+	UNiagaraFunctionLibrary::SpawnSystemAttached(ExplosionSystem, Mesh, NAME_None, ExplosionSpawnOffset, FRotator(0.f), EAttachLocation::Type::KeepRelativeOffset, true);
 }
 
