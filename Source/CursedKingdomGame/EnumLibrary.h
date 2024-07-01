@@ -13,6 +13,11 @@ enum class EItemName : uint8
 	Pollen,
 	Edelstein,
 	Feder,
-	Pilz,
+	NebelPilz,
+	Weizen,
+	Metalbarren,
+	Notizzettel,
+	SilberKit,
+	GoldKit,
 	ENUM_MAX,
 };
