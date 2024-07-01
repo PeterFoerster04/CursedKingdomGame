@@ -8,7 +8,7 @@
 
 class URecipeList;
 class USphereComponent;
-
+class UNiagaraSystem;
 
 UCLASS()
 class CURSEDKINGDOMGAME_API ACauldron : public AActor
@@ -27,6 +27,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
 		URecipeList* RecipeContainer;
 
+	//spawn this every time cauldron explodes
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
+	UNiagaraSystem* ExplosionSystem;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effects, meta = (AllowPrivateAccess))
+		FVector ExplosionSpawnOffset;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -41,4 +48,6 @@ public:
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
 	const FHitResult& SweepResult);
 
+
+	void Explode();
 };

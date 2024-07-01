@@ -34,4 +34,15 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+
+
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnItemThrow();
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnItemPickUp();
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnItemDrop();
+
+	
 };
