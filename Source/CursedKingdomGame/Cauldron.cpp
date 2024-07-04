@@ -38,6 +38,7 @@ void ACauldron::BeginPlay()
 	Super::BeginPlay();
 	ItemTrigger->OnComponentBeginOverlap.AddDynamic(this, &ACauldron::OnSphereTriggerOverlap);
 	CurrentPossibleRecipes = RecipeContainer->ListOfRecipes;
+	UE_LOG(LogTemp, Display, TEXT("All recipe Num: %i"), RecipeContainer->ListOfRecipes.Num())
 }
 
 // Called every frame
@@ -72,47 +73,61 @@ void ACauldron::OnSphereTriggerOverlap(UPrimitiveComponent* OverlappedComponent,
 
 void ACauldron::CheckItemForRecipe(ARecipeItem* Item)
 {
+	
 	UE_LOG(LogTemp, Display, TEXT("Item thrown in: %s"), *(UEnum::GetValueAsString(Item->Name)))
-		//iterate through all available recipes
 
-	int Iterations = DetermineLongestRecipeLength();
-	UE_LOG(LogTemp, Display, TEXT("Longest Recipe Length: %i"), Iterations);
+	UE_LOG(LogTemp, Display, TEXT("Number of available recipes: %i"), CurrentPossibleRecipes.Num())
+	//iterating through all possible recipes to check if recipe contains item at given index
+	//index is determined by the current amount of items in cauldron
+	//storing all to be removed recipes indices to delete later
+	//example:
+	//5 recipes currently available
+	//2 are removed because they do not contain item 1 at slot 0 (0 Items in Cauldron Array)
+	//next iteration
+	//1 more recipe is removed because it does not contain item 2 at slot 1 (1 Item in Cauldron Array)
+	//...
 
+	TArray<int> RecipeIndices;
 
-	for (int i = 0; i < Iterations; ++i)
+	for (int i = 0; i < CurrentPossibleRecipes.Num(); i++)
 	{
-
-		for (URecipe* Recipe : RecipeContainer->ListOfRecipes)
+		if(CurrentPossibleRecipes[i]->Ingredients[CurrentItemsInCauldron.Num()] !=Item->Name)
 		{
-			if (Recipe->Ingredients.Num() - 1 < Iterations) break;
-			if(Recipe->Ingredients[i] ==Item->Name)
-			{
-				
-			}
+			//adding index to deletion array if recipe does not fit
+			UE_LOG(LogTemp, Display, TEXT("Removed Recipe: %s, because it does not contain item: %s at slot %i"),
+				*CurrentPossibleRecipes[i]->GetName(),*Item->GetName(),i);
+			RecipeIndices.Add(i);
 		}
-
+		else
+		{
+			//putting item in cauldron if it is contained at given index
+			//obviously also increments index, since array size is used
+			CurrentItemsInCauldron.Add(Item);
+		}
+		
+	}
+	//deletion starts from behind so no entry is skipped
+	for (int i = RecipeIndices.Num()-1; i >= 0; i--)
+	{
+		CurrentPossibleRecipes.RemoveAt(RecipeIndices[i]);
 	}
 
 
-	for (URecipe* Recipe : RecipeContainer->ListOfRecipes)
+	UE_LOG(LogTemp, Display, TEXT("Number of available recipes: %i"), CurrentPossibleRecipes.Num())
+	if(CurrentPossibleRecipes.Num() == 0)
 	{
-		//iterate through all ingredients of a recipe
-		for (int i = 0; i<Recipe->Ingredients.Num();i++)
-		{
-			//item is contained in recipe but order is false
-			if(Item->Name == Recipe->Ingredients[i] && i != CurrentItemsInCauldron.Num())
-			{
-
-				UE_LOG(LogTemp, Display, TEXT("Process Canceled, Recipe: %s"), *Recipe->GetName());
-				UE_LOG(LogTemp, Display, TEXT("Wrong Order -> Item should be: %s"), *(UEnum::GetValueAsString(Recipe->Ingredients[i])))
-				break;
-				
-			}
-
-		}
+		Explode();
+		DumpContents();
+		
 	}
-	//Explode();
-	//DumpContents();
+	else if(CurrentPossibleRecipes.Num() == 1&& CurrentPossibleRecipes[0]->Ingredients.Num() == CurrentItemsInCauldron.Num())
+	{
+		UE_LOG(LogTemp, Display, TEXT("Success, brewed Potion"))
+		DumpContents();
+	}
+
+
+	
 }
 
 void ACauldron::Explode()
@@ -129,16 +144,4 @@ void ACauldron::DumpContents()
 	CurrentPossibleRecipes = RecipeContainer->ListOfRecipes;
 }
 
-int ACauldron::DetermineLongestRecipeLength()
-{
-	int LongestLength = 0;
-	for (URecipe* Recipe : CurrentPossibleRecipes)
-	{
-		if(Recipe->Ingredients.Num()>LongestLength)
-		{
-			LongestLength = Recipe->Ingredients.Num();
-		}
-	}
-	return LongestLength;
-}
 

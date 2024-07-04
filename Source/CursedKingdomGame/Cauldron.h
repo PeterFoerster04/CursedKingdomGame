@@ -58,5 +58,5 @@ public:
 	void CheckItemForRecipe(ARecipeItem* Item);
 	void Explode();
 	void DumpContents();
-	int DetermineLongestRecipeLength();
+	
 };
