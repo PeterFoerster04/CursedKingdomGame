@@ -10,10 +10,7 @@ URecipeList::URecipeList()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	ListOfRecipes.Add(Recipe1);
-	ListOfRecipes.Add(Recipe2);
 
-	
 }
 
 

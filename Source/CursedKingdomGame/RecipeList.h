@@ -8,6 +8,8 @@
 #include "RecipeList.generated.h"
 
 
+class URecipe;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CURSEDKINGDOMGAME_API URecipeList : public UActorComponent
 {
@@ -25,12 +27,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Contents, meta = (AllowPrivateAccess))
-	TArray<EItemName> Recipe1;
+	UPROPERTY(EditAnywhere,Category=Recipe,meta=(AllowPrivateAccess))
+	TArray<URecipe*> ListOfRecipes;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Contents, meta = (AllowPrivateAccess))
-	TArray<EItemName> Recipe2;
-
-	//cannot use UPROPERTY sadly :(
-	TArray<TArray<EItemName>> ListOfRecipes;
 };
