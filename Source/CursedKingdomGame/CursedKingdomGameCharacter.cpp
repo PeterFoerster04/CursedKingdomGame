@@ -61,7 +61,7 @@ void ACursedKingdomGameCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
+	CurrentHealth = MaxHealth;
 	MaxSprintMovementSpeed = MaxMovementSpeedDefault * SprintMultiplier;
 	CurrentStamina = MaxStamina;
 	StaminaCurrentCooldownTime = StaminaCooldownTime;

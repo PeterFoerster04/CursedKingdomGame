@@ -92,6 +92,13 @@ public:
 
 	FVector2D MovementVector;
 
+
+	//Stats
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
+	float MaxHealth = 100.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
+	float CurrentHealth;
 	
 
 	//Movement Values
