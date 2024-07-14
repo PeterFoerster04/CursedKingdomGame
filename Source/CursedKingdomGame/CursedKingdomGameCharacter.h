@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EnumLibrary.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "CursedKingdomGameCharacter.generated.h"
@@ -94,10 +95,10 @@ public:
 
 
 	//Stats
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess))
 	float MaxHealth = 100.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess))
 	float CurrentHealth;
 	
 
@@ -127,6 +128,18 @@ public:
 
 	bool bIsOnCooldown = false;
 	bool bTestBool = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
+	bool bJustPickedUpItem = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
+	bool bPlayerInventoryFull = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess))
+	EItemName NameOfLastPickedItem;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess))
+	EItemName NameOfCurrentItemInHand;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
+	int ItemsInInventory = 0;
 
 	void ManageStamina(float a_Delta);
 

@@ -204,10 +204,14 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 		PossibleItem->Mesh->SetSimulatePhysics(false);
 		PossibleItem->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		PlayerInventory->AddItem(PossibleItem);
+		NameOfLastPickedItem = PossibleItem->Name;
+		bJustPickedUpItem = true;
+		ItemsInInventory++;
 	}
-	else if(PlayerInventory->CheckInventoryFull())
+	if(PlayerInventory->CheckInventoryFull())
 	{
 		UE_LOG(LogTemp, Log, TEXT("Inventory Full"));
+		bPlayerInventoryFull = true;
 	}
 
 	
@@ -237,10 +241,14 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 	if (PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
 	{
 		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->
-		AttachToComponent(ItemHoldSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+			AttachToComponent(ItemHoldSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		PlayerInventory->MoveItem(false);
+		NameOfCurrentItemInHand = PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->Name;
 	}
-	
+	else
+	{
+		NameOfCurrentItemInHand = EItemName::DEFAULT;
+	}
 	UE_LOG(LogTemp, Display, TEXT("%i"), PlayerInventory->CurrentItemOutIndex)
 	
 	
@@ -254,6 +262,9 @@ void ACursedKingdomGameCharacter::DropItem(const FInputActionValue& Value)
 	{
 		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->OnItemDrop();
 		PlayerInventory->ActivateItem();
+		ItemsInInventory--;
+		bPlayerInventoryFull = false;
+		NameOfCurrentItemInHand = EItemName::DEFAULT;
 	}
 
 	//UE_LOG(LogTemp, Display, TEXT("%f"), input)
@@ -268,7 +279,9 @@ void ACursedKingdomGameCharacter::ThrowItem(const FInputActionValue& Value)
 	{
 		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->OnItemThrow();
 		PlayerInventory->ActivateItem(true,FirstPersonCameraComponent->GetForwardVector(),ThrowForce);
-
+		ItemsInInventory--;
+		bPlayerInventoryFull = false;
+		NameOfCurrentItemInHand = EItemName::DEFAULT;
 	}
 	
 	//UE_LOG(LogTemp, Display, TEXT("%f"), input)
