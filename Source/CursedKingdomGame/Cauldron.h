@@ -41,6 +41,16 @@ public:
 	UPROPERTY()
 	TArray<ARecipeItem*> CurrentItemsInCauldron;
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Brewing, meta = (AllowPrivateAccess))
+	float PotionBrewingTime = 8.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Brewing, meta = (AllowPrivateAccess))
+	bool CurrentlyBrewing = false;
+
+	FTimerHandle TimerHandle;
+
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -58,5 +68,19 @@ public:
 	void CheckItemForRecipe(ARecipeItem* Item);
 	void Explode();
 	void DumpContents();
-	
+	void MakePotion();
+	void SetPotionReady();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnItemInsert();
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnExplode();
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnStartBrewing();
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnFinishedBrewing();
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnItemInsertWhileBrewing();
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnWrongItemInsert();
 };
