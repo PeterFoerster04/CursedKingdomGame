@@ -27,6 +27,9 @@ ACauldron::ACauldron()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
 	Mesh->SetupAttachment(RootComponent);
 
+	PotionSoupMesh = CreateDefaultSubobject<UStaticMeshComponent>("PotionSoupMesh");
+	PotionSoupMesh->SetupAttachment(RootComponent);
+
 	RecipeContainer = CreateDefaultSubobject<URecipeList>("RecipeContainer");
 
 	

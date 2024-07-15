@@ -25,6 +25,8 @@ public:
 		USphereComponent* ItemTrigger;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
 		UStaticMeshComponent* Mesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
+		UStaticMeshComponent* PotionSoupMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
 	URecipeList* RecipeContainer;
