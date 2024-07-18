@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "CursedKingdomGameCharacter.h"
+
+#include "Cauldron.h"
 #include "CursedKingdomGameProjectile.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
@@ -195,8 +197,16 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 		UE_LOG(LogTemp, Log, TEXT("No Actors were hit"));
 	}
 	AItem* PossibleItem = Cast<AItem>(Hit.GetActor());
+	ACauldron* PossibleCauldron = Cast<ACauldron>(Hit.GetActor());
+	if(PossibleCauldron != nullptr&&!PossibleCauldron->IsUpgraded&&PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->Name == EItemName::GoldKit)
+	{
+		PossibleCauldron->UpgradeCauldron();
+		PlayerInventory->RemoveItemInHand();
+		ItemsInInventory--;
+		bPlayerInventoryFull = false;
+		NameOfCurrentItemInHand = EItemName::DEFAULT;
+	}
 
-	
 	if (PossibleItem != nullptr && !PlayerInventory->CheckInventoryFull())
 	{
 		UE_LOG(LogTemp, Log, TEXT("Picked Up Actor: %s"), *PossibleItem->GetName());

@@ -27,7 +27,7 @@ public:
 
 	void InitInventory();
 	void AddItem(AItem* a_ItemToAdd);
-	void RemoveItem(AItem* a_ItemToAdd);
+	void RemoveItemInHand();
 
 	void DeactivateItem(AItem* a_ItemToAdd);
 	void ActivateItem(bool a_bUseForce = false, FVector a_ThrowDirection = FVector::ZeroVector, float a_Force = 0.0f);

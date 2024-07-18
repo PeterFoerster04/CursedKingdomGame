@@ -27,6 +27,8 @@ public:
 		UStaticMeshComponent* Mesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
 		UStaticMeshComponent* PotionSoupMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mat, meta = (AllowPrivateAccess))
+	UMaterialInterface* UpgradeMat;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
 	URecipeList* RecipeContainer;
@@ -51,6 +53,7 @@ public:
 
 	FTimerHandle TimerHandle;
 
+	bool IsUpgraded = false;
 
 
 protected:
@@ -72,6 +75,7 @@ public:
 	void DumpContents();
 	void MakePotion();
 	void SetPotionReady();
+	void UpgradeCauldron();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnItemInsert();
@@ -85,4 +89,6 @@ public:
 	void OnItemInsertWhileBrewing();
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnWrongItemInsert();
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnUpgradeCauldron();
 };

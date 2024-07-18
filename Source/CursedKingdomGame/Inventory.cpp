@@ -40,8 +40,11 @@ void UInventory::AddItem(AItem* a_ItemToAdd)
 	UE_LOG(LogTemp, Log, TEXT("Inventory Full"));
 }
 
-void UInventory::RemoveItem(AItem* a_ItemToAdd)
+void UInventory::RemoveItemInHand()
 {
+	ItemBundle[CurrentItemOutIndex]->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	ItemBundle[CurrentItemOutIndex]->Destroy();
+	ItemBundle[CurrentItemOutIndex] = nullptr;
 }
 
 void UInventory::DeactivateItem(AItem* a_ItemToAdd)

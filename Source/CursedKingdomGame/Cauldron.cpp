@@ -185,4 +185,12 @@ void ACauldron::SetPotionReady()
 	OnFinishedBrewing();
 }
 
+void ACauldron::UpgradeCauldron()
+{
+	if(UpgradeMat != nullptr)Mesh->SetMaterial(0, UpgradeMat);
+	PotionBrewingTime /= 2.0f;
+	IsUpgraded = true;
+	OnUpgradeCauldron();
+}
+
 
