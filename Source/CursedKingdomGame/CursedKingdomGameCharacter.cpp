@@ -57,6 +57,7 @@ ACursedKingdomGameCharacter::ACursedKingdomGameCharacter()
 	PlayerInventory = CreateDefaultSubobject<UInventory>("Inventory");
 
 	PlayerInventory->Player = this;
+	FirstPersonCameraComponent->PostProcessSettings.bOverride_VignetteIntensity = true;
 }
 
 void ACursedKingdomGameCharacter::BeginPlay()
@@ -90,6 +91,7 @@ void ACursedKingdomGameCharacter::Tick(float DeltaSeconds)
 	ChangeFOV(DeltaSeconds);
 	ManageStamina(DeltaSeconds);
 	ManageHealth(DeltaSeconds);
+	ManagePostProcessEffects(DeltaSeconds);
 	UE_LOG(LogTemp, Display, TEXT("Health:%f"), CurrentHealth);
 }
 
@@ -137,10 +139,12 @@ void ACursedKingdomGameCharacter::Move(const FInputActionValue& Value)
 		// add movement 
 		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
 		AddMovementInput(GetActorRightVector(), MovementVector.X);
+		bIsWalking = true;
 	}
 	if(MovementVector == FVector2D::ZeroVector)
 	{
 		bIsSprinting = false;
+		bIsWalking = false;
 		GetCharacterMovement()->MaxWalkSpeed = MaxMovementSpeedDefault;
 	}
 
@@ -166,7 +170,7 @@ void ACursedKingdomGameCharacter::Sprint(const FInputActionValue& Value)
 		bIsSprinting = false;
 		return;
 	}
-
+	if (!bIsWalking) return;
 	bIsSprinting = Value.Get<bool>();
 
 	GetCharacterMovement()->MaxWalkSpeed = bIsSprinting ? MaxSprintMovementSpeed : MaxMovementSpeedDefault;
@@ -368,6 +372,30 @@ void ACursedKingdomGameCharacter::TakeDamage(float a_Damage)
 		CurrentHealth = 0;
 		PlayerDied = true;
 	}
+}
+
+void ACursedKingdomGameCharacter::ManagePostProcessEffects(float a_Delta)
+{
+	if(CurrentHealth <MaxHealth)
+	{
+
+		float newVigIntensity = 1.0f - (CurrentHealth / MaxHealth);
+		float newFringeIntensity = (1.0f - (CurrentHealth / MaxHealth))*3.0f;
+		newVigIntensity = FMath::Clamp(newVigIntensity, 0.0f, 1.0f);
+		FirstPersonCameraComponent->PostProcessSettings.bOverride_VignetteIntensity = true;
+		FirstPersonCameraComponent->PostProcessSettings.bOverride_SceneFringeIntensity = true;
+
+		FirstPersonCameraComponent->PostProcessSettings.VignetteIntensity = newVigIntensity;
+		FirstPersonCameraComponent->PostProcessSettings.SceneFringeIntensity = newFringeIntensity;
+			//UE_LOG(LogTemp, Display, TEXT("V:%f"), newIntensity);
+	}
+	else
+	{
+		FirstPersonCameraComponent->PostProcessSettings.VignetteIntensity = 0.0f;
+		FirstPersonCameraComponent->PostProcessSettings.SceneFringeIntensity = 0.0f;
+	}
+
+
 }
 
 void ACursedKingdomGameCharacter::SetHasRifle(bool bNewHasRifle)
