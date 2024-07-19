@@ -100,7 +100,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess))
 	float CurrentHealth;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess))
+	bool PlayerDied = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess))
+	float HealthReGenPerSec = 2.0f;
 
 	//Movement Values
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
@@ -142,6 +145,9 @@ public:
 	int ItemsInInventory = 0;
 
 	void ManageStamina(float a_Delta);
+	void ManageHealth(float a_Delta);
+	UFUNCTION(BlueprintCallable)
+	void TakeDamage(float a_Damage);
 
 	/** Setter to set the bool */
 	UFUNCTION(BlueprintCallable, Category = Weapon)

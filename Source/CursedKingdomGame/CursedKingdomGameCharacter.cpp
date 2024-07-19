@@ -89,6 +89,8 @@ void ACursedKingdomGameCharacter::Tick(float DeltaSeconds)
 
 	ChangeFOV(DeltaSeconds);
 	ManageStamina(DeltaSeconds);
+	ManageHealth(DeltaSeconds);
+	UE_LOG(LogTemp, Display, TEXT("Health:%f"), CurrentHealth);
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -341,6 +343,31 @@ void ACursedKingdomGameCharacter::ManageStamina(float a_Delta)
 	}
 
 	
+}
+
+void ACursedKingdomGameCharacter::ManageHealth(float a_Delta)
+{
+	if(CurrentHealth < MaxHealth)
+	{
+		CurrentHealth += HealthReGenPerSec * a_Delta;
+	}
+	else
+	{
+		CurrentHealth = MaxHealth;
+	}
+}
+
+void ACursedKingdomGameCharacter::TakeDamage(float a_Damage)
+{
+	if(CurrentHealth> a_Damage)
+	{
+		CurrentHealth -= a_Damage;
+	}
+	else
+	{
+		CurrentHealth = 0;
+		PlayerDied = true;
+	}
 }
 
 void ACursedKingdomGameCharacter::SetHasRifle(bool bNewHasRifle)
