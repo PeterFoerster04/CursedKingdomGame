@@ -13,8 +13,10 @@
 #include "InputActionValue.h"
 #include "Inventory.h"
 #include "Item.h"
+#include "KingdomGameInstance.h"
 #include "Engine/LocalPlayer.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -82,6 +84,19 @@ void ACursedKingdomGameCharacter::BeginPlay()
 	//UE_LOG(LogTemp,Display,TEXT("%f"),FirstPersonCameraComponent->FieldOfView)
 	FirstPersonCameraComponent->FieldOfView = WalkFOV;
 
+	Instance = Cast<UKingdomGameInstance>( UGameplayStatics::GetGameInstance(CurrentWorld));
+	if(Instance != nullptr)
+	{
+		SetActorLocationAndRotation(Instance->SaveGameObject->SpawnPosition.GetLocation(), Instance->SaveGameObject->SpawnPosition.GetRotation());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("Game Instace Null"));
+	}
+
+	if (Instance->SaveGameObject->TutorialDone) CurrentTutoIndex = 0;
+	else CurrentTutoIndex = 1;
+
 }
 
 void ACursedKingdomGameCharacter::Tick(float DeltaSeconds)
@@ -92,10 +107,46 @@ void ACursedKingdomGameCharacter::Tick(float DeltaSeconds)
 	ManageStamina(DeltaSeconds);
 	ManageHealth(DeltaSeconds);
 	ManagePostProcessEffects(DeltaSeconds);
-	UE_LOG(LogTemp, Display, TEXT("Health:%f"), CurrentHealth);
+	//UE_LOG(LogTemp, Display, TEXT("Health:%f"), CurrentHealth);
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
+
+void ACursedKingdomGameCharacter::CheckJumpTuto()
+{
+
+	if (!Instance->SaveGameObject->TutorialDone && CurrentTutoIndex == 2&&!TutoBlocked)
+	{
+		CurrentTutoIndex++;
+		TutoBlocked = true;
+	}
+}
+
+void ACursedKingdomGameCharacter::Die()
+{
+	
+	PlayerDied = true;
+	UGameplayStatics::GetPlayerCameraManager(CurrentWorld, 0)->StartCameraFade(0.0f, 1.0f, 1.5f, FLinearColor::Black, true,true);
+	
+	FInputModeUIOnly input;
+	UGameplayStatics::GetPlayerController(CurrentWorld, 0)->SetInputMode(input);
+	UGameplayStatics::GetPlayerController(CurrentWorld, 0)->PlayerInput->FlushPressedKeys();
+	GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &ACursedKingdomGameCharacter::Resurrect, 3.0f);
+	
+	CurrentHealth = MaxHealth;
+	CurrentStamina = MaxStamina;
+}
+
+void ACursedKingdomGameCharacter::Resurrect()
+{
+	SetActorLocation(Instance->SaveGameObject->DeathRespawnPoint.GetLocation());
+	UGameplayStatics::GetPlayerCameraManager(CurrentWorld, 0)->StartCameraFade(1.0f, 0.0f, 1.5f, FLinearColor::Black, true, true);
+	
+	UE_LOG(LogTemp, Display, TEXT("REEEEES"));
+	PlayerDied = false;
+	FInputModeGameOnly input;
+	UGameplayStatics::GetPlayerController(CurrentWorld, 0)->SetInputMode(input);
+}
 
 void ACursedKingdomGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -121,18 +172,38 @@ void ACursedKingdomGameCharacter::SetupPlayerInputComponent(UInputComponent* Pla
 		EnhancedInputComponent->BindAction(ItemDropAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::DropItem);
 
 		EnhancedInputComponent->BindAction(ItemThrowAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::ThrowItem);
+
+		
 	}
 	else
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+	
 }
 
 
 void ACursedKingdomGameCharacter::Move(const FInputActionValue& Value)
 {
+
+
 	// input is a Vector2D
 	MovementVector = Value.Get<FVector2D>();
+	if(!Instance->SaveGameObject->TutorialDone &&CurrentTutoIndex ==1&& !TutoBlocked)
+	{
+		if (MovementVector.X == 1.0f)  TutoBoolsToCheck.pressedD = true; 
+		else if (MovementVector.X == -1.0f) TutoBoolsToCheck.pressedA = true;
+		else if (MovementVector.Y == 1.0f)  TutoBoolsToCheck.pressedW = true;
+		else if (MovementVector.Y == -1.0f) TutoBoolsToCheck.pressedS = true;
+
+		if (TutoBoolsToCheck.pressedW && TutoBoolsToCheck.pressedA && TutoBoolsToCheck.pressedS && TutoBoolsToCheck.pressedD)
+		{
+			UE_LOG(LogTemp, Display, TEXT("WASD Pressed"));
+			CurrentTutoIndex++;
+			TutoBlocked = true;
+		}
+
+	}
 
 	if (Controller != nullptr)
 	{
@@ -153,6 +224,7 @@ void ACursedKingdomGameCharacter::Move(const FInputActionValue& Value)
 
 void ACursedKingdomGameCharacter::Look(const FInputActionValue& Value)
 {
+	
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
@@ -166,6 +238,13 @@ void ACursedKingdomGameCharacter::Look(const FInputActionValue& Value)
 
 void ACursedKingdomGameCharacter::Sprint(const FInputActionValue& Value)
 {
+
+	if (!Instance->SaveGameObject->TutorialDone && CurrentTutoIndex == 3 && !TutoBlocked)
+	{
+		CurrentTutoIndex++;
+		TutoBlocked = true;
+	}
+	
 	if (bIsOnCooldown) {
 		bIsSprinting = false;
 		return;
@@ -180,6 +259,12 @@ void ACursedKingdomGameCharacter::Sprint(const FInputActionValue& Value)
 
 void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 {
+	if (!Instance->SaveGameObject->TutorialDone && CurrentTutoIndex == 4 && !TutoBlocked)
+	{
+		CurrentTutoIndex++;
+		TutoBlocked = true;
+	}
+	
 	//UE_LOG(LogTemp,Display,TEXT("Interact press"))
 
 	FHitResult Hit;
@@ -237,6 +322,11 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 //thats why the move item function seems kind of useless now
 void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 {
+	if (!Instance->SaveGameObject->TutorialDone && CurrentTutoIndex == 5 && !TutoBlocked)
+	{
+		CurrentTutoIndex++;
+		TutoBlocked = true;
+	}
 	float scroll = Value.Get<float>();
 
 	//if scrolling gets out of range of (into negative or max inventory size) return
@@ -272,6 +362,12 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 
 void ACursedKingdomGameCharacter::DropItem(const FInputActionValue& Value)
 {
+	if (!Instance->SaveGameObject->TutorialDone && CurrentTutoIndex == 6 && !TutoBlocked)
+	{
+		CurrentTutoIndex++;
+		TutoBlocked = true;
+	}
+	
 	float input = Value.Get<float>();
 
 	if(PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
@@ -288,7 +384,12 @@ void ACursedKingdomGameCharacter::DropItem(const FInputActionValue& Value)
 
 void ACursedKingdomGameCharacter::ThrowItem(const FInputActionValue& Value)
 {
-	
+	if (!Instance->SaveGameObject->TutorialDone && CurrentTutoIndex == 7 && !TutoBlocked)
+	{
+		CurrentTutoIndex = 0;
+		TutoBlocked = true;
+		Instance->SaveGameObject->TutorialDone = true;
+	}
 	float input = Value.Get<float>();
 
 	if (PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
@@ -370,7 +471,8 @@ void ACursedKingdomGameCharacter::TakeDamage(float a_Damage)
 	else
 	{
 		CurrentHealth = 0;
-		PlayerDied = true;
+		if(!PlayerDied)Die();
+		
 	}
 }
 

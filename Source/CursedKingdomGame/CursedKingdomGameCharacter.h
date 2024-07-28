@@ -8,6 +8,7 @@
 #include "Logging/LogMacros.h"
 #include "CursedKingdomGameCharacter.generated.h"
 
+class UKingdomGameInstance;
 class UInventory;
 class UInputComponent;
 class USkeletalMeshComponent;
@@ -63,11 +64,12 @@ public:
 	ACursedKingdomGameCharacter();
 
 protected:
-	virtual void BeginPlay();
+	virtual void BeginPlay()override;
 	virtual  void Tick(float DeltaSeconds) override;
 
 public:
-		
+	UPROPERTY()
+	UKingdomGameInstance* Instance = nullptr;
 		
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
@@ -133,6 +135,11 @@ public:
 	bool bIsOnCooldown = false;
 	bool bTestBool = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Tuto, meta = (AllowPrivateAccess))
+	int CurrentTutoIndex = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Tuto, meta = (AllowPrivateAccess))
+	bool TutoBlocked;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	bool bJustPickedUpItem = false;
 
@@ -158,6 +165,10 @@ public:
 	/** Getter for the bool */
 	UFUNCTION(BlueprintCallable, Category = Weapon)
 	bool GetHasRifle();
+	UFUNCTION(BlueprintCallable)
+	void CheckJumpTuto();
+
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	USceneComponent* ItemStoreSpot;
@@ -187,6 +198,25 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnItemSwap();
+
+	
+	void Die();
+
+	void Resurrect();
+
+
+	FTimerHandle DeathTimerHandle;
+
+
+	//quick and dirty pls do not kill me :(
+	struct TutorialBools
+	{
+		bool pressedW;
+		bool pressedA;
+		bool pressedS;
+		bool pressedD;
+	};
+	TutorialBools TutoBoolsToCheck;
 
 protected:
 	// APawn interface
