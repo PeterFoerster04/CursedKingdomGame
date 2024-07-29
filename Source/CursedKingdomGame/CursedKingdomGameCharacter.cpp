@@ -88,6 +88,7 @@ void ACursedKingdomGameCharacter::BeginPlay()
 	if(Instance != nullptr)
 	{
 		SetActorLocationAndRotation(Instance->SaveGameObject->SpawnPosition.GetLocation(), Instance->SaveGameObject->SpawnPosition.GetRotation());
+		MouseSens = Instance->SaveGameObject->MouseSens;
 	}
 	else
 	{
@@ -97,6 +98,7 @@ void ACursedKingdomGameCharacter::BeginPlay()
 	if (Instance->SaveGameObject->TutorialDone) CurrentTutoIndex = 0;
 	else CurrentTutoIndex = 1;
 
+	
 }
 
 void ACursedKingdomGameCharacter::Tick(float DeltaSeconds)
