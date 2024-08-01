@@ -109,6 +109,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
 	float MaxMovementSpeedDefault = 500.0f;
 	float MaxSprintMovementSpeed;
+	bool bIsWalking;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
 	float ThrowForce = 5.0f;
@@ -148,6 +149,7 @@ public:
 	void ManageHealth(float a_Delta);
 	UFUNCTION(BlueprintCallable)
 	void TakeDamage(float a_Damage);
+	void ManagePostProcessEffects(float a_Delta);
 
 	/** Setter to set the bool */
 	UFUNCTION(BlueprintCallable, Category = Weapon)
