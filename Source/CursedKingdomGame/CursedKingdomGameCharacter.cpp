@@ -110,6 +110,7 @@ void ACursedKingdomGameCharacter::Tick(float DeltaSeconds)
 	ManageHealth(DeltaSeconds);
 	ManagePostProcessEffects(DeltaSeconds);
 	//UE_LOG(LogTemp, Display, TEXT("Health:%f"), CurrentHealth);
+	CheckForItemInFront();
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -278,7 +279,7 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 	QueryParams.AddIgnoredActor(this);
 
 	CurrentWorld->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Pawn, QueryParams);
-	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 10.0f);
+	//DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 10.0f);
 
 	// If the trace hit something, bBlockingHit will be true,
 	// and its fields will be filled with detailed info about what was hit
@@ -499,6 +500,39 @@ void ACursedKingdomGameCharacter::ManagePostProcessEffects(float a_Delta)
 		FirstPersonCameraComponent->PostProcessSettings.SceneFringeIntensity = 0.0f;
 	}
 
+
+}
+
+void ACursedKingdomGameCharacter::CheckForItemInFront()
+{
+	FHitResult Hit;
+	FVector TraceStart = FirstPersonCameraComponent->GetComponentLocation();
+	FVector TraceEnd = FirstPersonCameraComponent->GetComponentLocation() + FirstPersonCameraComponent->GetForwardVector() * MaxInteractRange;
+
+	//ignore own actor
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	CurrentWorld->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Pawn, QueryParams);
+	//DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 10.0f);
+
+	if (Hit.bBlockingHit && Hit.GetActor() != nullptr)
+	{
+		AItem* PossibleItem = Cast<AItem>(Hit.GetActor());
+		if(PossibleItem != nullptr)
+		{
+			PossibleItem->isFocused = true;
+			bIsFocusingItem = true;
+		}
+		else
+		{
+			bIsFocusingItem = false;
+		}
+	}
+	else
+	{
+		bIsFocusingItem = false;
+	}
 
 }
 
