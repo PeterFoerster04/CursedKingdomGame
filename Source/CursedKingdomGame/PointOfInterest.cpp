@@ -18,6 +18,7 @@ APointOfInterest::APointOfInterest()
 void APointOfInterest::BeginPlay()
 {
 	Super::BeginPlay();
+	WidgetComp->GetWidget()->SetVisibility(ESlateVisibility::Hidden);
 	
 }
 
