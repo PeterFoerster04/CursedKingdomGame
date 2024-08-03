@@ -19,5 +19,6 @@ enum class EItemName : uint8
 	Notizzettel,
 	SilberKit,
 	GoldKit,
+	Karte,
 	ENUM_MAX,
 };

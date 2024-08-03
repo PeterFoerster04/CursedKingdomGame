@@ -8,6 +8,7 @@
 #include "Logging/LogMacros.h"
 #include "CursedKingdomGameCharacter.generated.h"
 
+class AItem;
 class UKingdomGameInstance;
 class UInventory;
 class UInputComponent;
@@ -134,6 +135,7 @@ public:
 
 	bool bIsOnCooldown = false;
 	bool bTestBool = false;
+	bool bIsFocusingItem = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Tuto, meta = (AllowPrivateAccess))
 	int CurrentTutoIndex = 0;
@@ -157,6 +159,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void TakeDamage(float a_Damage);
 	void ManagePostProcessEffects(float a_Delta);
+	void CheckForItemInFront();
 
 	/** Setter to set the bool */
 	UFUNCTION(BlueprintCallable, Category = Weapon)
@@ -168,7 +171,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CheckJumpTuto();
 
-
+	void HandlePOIMap(AItem* ItemToCheck, bool SetVisibility);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	USceneComponent* ItemStoreSpot;

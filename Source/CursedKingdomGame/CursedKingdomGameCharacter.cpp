@@ -14,6 +14,7 @@
 #include "Inventory.h"
 #include "Item.h"
 #include "KingdomGameInstance.h"
+#include "POIMap.h"
 #include "Engine/LocalPlayer.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -110,6 +111,7 @@ void ACursedKingdomGameCharacter::Tick(float DeltaSeconds)
 	ManageHealth(DeltaSeconds);
 	ManagePostProcessEffects(DeltaSeconds);
 	//UE_LOG(LogTemp, Display, TEXT("Health:%f"), CurrentHealth);
+	CheckForItemInFront();
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -121,6 +123,16 @@ void ACursedKingdomGameCharacter::CheckJumpTuto()
 	{
 		CurrentTutoIndex++;
 		TutoBlocked = true;
+	}
+}
+
+void ACursedKingdomGameCharacter::HandlePOIMap(AItem* ItemToCheck , bool SetVisibility)
+{
+	if (ItemToCheck->Name != EItemName::Karte) return;
+
+	if(APOIMap* Map = Cast<APOIMap>(ItemToCheck))
+	{
+		Map->TogglePOIVisibility(SetVisibility);
 	}
 }
 
@@ -278,7 +290,7 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 	QueryParams.AddIgnoredActor(this);
 
 	CurrentWorld->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Pawn, QueryParams);
-	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 10.0f);
+	//DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 10.0f);
 
 	// If the trace hit something, bBlockingHit will be true,
 	// and its fields will be filled with detailed info about what was hit
@@ -339,6 +351,8 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 	{
 		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->
 		AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
+		HandlePOIMap(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex],false);
 		PlayerInventory->MoveItem();
 	}
 	
@@ -350,6 +364,8 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 	{
 		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->
 			AttachToComponent(ItemHoldSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
+		HandlePOIMap(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex], true);
 		PlayerInventory->MoveItem(false);
 		NameOfCurrentItemInHand = PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->Name;
 	}
@@ -499,6 +515,39 @@ void ACursedKingdomGameCharacter::ManagePostProcessEffects(float a_Delta)
 		FirstPersonCameraComponent->PostProcessSettings.SceneFringeIntensity = 0.0f;
 	}
 
+
+}
+
+void ACursedKingdomGameCharacter::CheckForItemInFront()
+{
+	FHitResult Hit;
+	FVector TraceStart = FirstPersonCameraComponent->GetComponentLocation();
+	FVector TraceEnd = FirstPersonCameraComponent->GetComponentLocation() + FirstPersonCameraComponent->GetForwardVector() * MaxInteractRange;
+
+	//ignore own actor
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	CurrentWorld->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Pawn, QueryParams);
+	//DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 10.0f);
+
+	if (Hit.bBlockingHit && Hit.GetActor() != nullptr)
+	{
+		AItem* PossibleItem = Cast<AItem>(Hit.GetActor());
+		if(PossibleItem != nullptr)
+		{
+			PossibleItem->isFocused = true;
+			bIsFocusingItem = true;
+		}
+		else
+		{
+			bIsFocusingItem = false;
+		}
+	}
+	else
+	{
+		bIsFocusingItem = false;
+	}
 
 }
 
