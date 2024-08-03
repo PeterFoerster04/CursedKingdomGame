@@ -8,6 +8,7 @@
 #include "Logging/LogMacros.h"
 #include "CursedKingdomGameCharacter.generated.h"
 
+class AItem;
 class UKingdomGameInstance;
 class UInventory;
 class UInputComponent;
@@ -170,7 +171,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CheckJumpTuto();
 
-
+	void HandlePOIMap(AItem* ItemToCheck, bool SetVisibility);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	USceneComponent* ItemStoreSpot;

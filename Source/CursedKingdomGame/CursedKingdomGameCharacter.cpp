@@ -14,6 +14,7 @@
 #include "Inventory.h"
 #include "Item.h"
 #include "KingdomGameInstance.h"
+#include "POIMap.h"
 #include "Engine/LocalPlayer.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -122,6 +123,16 @@ void ACursedKingdomGameCharacter::CheckJumpTuto()
 	{
 		CurrentTutoIndex++;
 		TutoBlocked = true;
+	}
+}
+
+void ACursedKingdomGameCharacter::HandlePOIMap(AItem* ItemToCheck , bool SetVisibility)
+{
+	if (ItemToCheck->Name != EItemName::Karte) return;
+
+	if(APOIMap* Map = Cast<APOIMap>(ItemToCheck))
+	{
+		Map->TogglePOIVisibility(SetVisibility);
 	}
 }
 
@@ -340,6 +351,8 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 	{
 		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->
 		AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
+		HandlePOIMap(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex],false);
 		PlayerInventory->MoveItem();
 	}
 	
@@ -351,6 +364,8 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 	{
 		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->
 			AttachToComponent(ItemHoldSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
+		HandlePOIMap(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex], true);
 		PlayerInventory->MoveItem(false);
 		NameOfCurrentItemInHand = PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->Name;
 	}
