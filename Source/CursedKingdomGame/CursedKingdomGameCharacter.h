@@ -8,6 +8,8 @@
 #include "Logging/LogMacros.h"
 #include "CursedKingdomGameCharacter.generated.h"
 
+class AItem;
+class UKingdomGameInstance;
 class UInventory;
 class UInputComponent;
 class USkeletalMeshComponent;
@@ -63,11 +65,12 @@ public:
 	ACursedKingdomGameCharacter();
 
 protected:
-	virtual void BeginPlay();
+	virtual void BeginPlay()override;
 	virtual  void Tick(float DeltaSeconds) override;
 
 public:
-		
+	UPROPERTY()
+	UKingdomGameInstance* Instance = nullptr;
 		
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
@@ -79,7 +82,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	bool bHasRifle;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess))
 	float MouseSens = 1.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess))
 	float SprintMultiplier = 2.0f;
@@ -132,6 +135,12 @@ public:
 
 	bool bIsOnCooldown = false;
 	bool bTestBool = false;
+	bool bIsFocusingItem = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Tuto, meta = (AllowPrivateAccess))
+	int CurrentTutoIndex = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Tuto, meta = (AllowPrivateAccess))
+	bool TutoBlocked = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	bool bJustPickedUpItem = false;
@@ -150,6 +159,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void TakeDamage(float a_Damage);
 	void ManagePostProcessEffects(float a_Delta);
+	void CheckForItemInFront();
 
 	/** Setter to set the bool */
 	UFUNCTION(BlueprintCallable, Category = Weapon)
@@ -158,6 +168,10 @@ public:
 	/** Getter for the bool */
 	UFUNCTION(BlueprintCallable, Category = Weapon)
 	bool GetHasRifle();
+	UFUNCTION(BlueprintCallable)
+	void CheckJumpTuto();
+
+	void HandlePOIMap(AItem* ItemToCheck, bool SetVisibility);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	USceneComponent* ItemStoreSpot;
@@ -187,6 +201,25 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnItemSwap();
+
+	
+	void Die();
+
+	void Resurrect();
+
+
+	FTimerHandle DeathTimerHandle;
+
+
+	//quick and dirty pls do not kill me :(
+	struct TutorialBools
+	{
+		bool pressedW;
+		bool pressedA;
+		bool pressedS;
+		bool pressedD;
+	};
+	TutorialBools TutoBoolsToCheck;
 
 protected:
 	// APawn interface
