@@ -138,6 +138,8 @@ public:
 	bool bIsFocusingItem = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Map, meta = (AllowPrivateAccess))
 	bool bHasMapInHand = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess))
+	bool bIsInWater = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Tuto, meta = (AllowPrivateAccess))
 	int CurrentTutoIndex = 0;

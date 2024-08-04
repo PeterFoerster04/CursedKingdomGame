@@ -264,7 +264,8 @@ void ACursedKingdomGameCharacter::Sprint(const FInputActionValue& Value)
 		bIsSprinting = false;
 		return;
 	}
-	if (!bIsWalking) return;
+	if (!bIsWalking||bIsInWater) return;
+	
 	bIsSprinting = Value.Get<bool>();
 
 	GetCharacterMovement()->MaxWalkSpeed = bIsSprinting ? MaxSprintMovementSpeed : MaxMovementSpeedDefault;
