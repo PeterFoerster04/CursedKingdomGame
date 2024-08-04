@@ -81,8 +81,8 @@ void ACauldron::OnSphereTriggerOverlap(UPrimitiveComponent* OverlappedComponent,
 	else if(OtherActor->IsA(AItem::StaticClass())&& !OtherActor->IsA(ARecipeItem::StaticClass()))
 	{
 		UE_LOG(LogTemp, Display, TEXT("Wrong Item KekW"))
-		//PossibleItem->SetActorEnableCollision(false);
-		//PossibleItem->SetActorHiddenInGame(true);
+		OtherActor->SetActorEnableCollision(false);
+		OtherActor->SetActorHiddenInGame(true);
 		//PossibleItem->Destroy();
 		OnWrongItemInsert();
 		Explode();

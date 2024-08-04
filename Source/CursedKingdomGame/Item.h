@@ -8,8 +8,7 @@
 #include "Item.generated.h"
 
 
-
-
+class ACursedKingdomGameCharacter;
 
 UCLASS()
 class CURSEDKINGDOMGAME_API AItem : public AActor
@@ -25,6 +24,19 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = Comps, meta= (AllowPrivateAccess))
 	UStaticMeshComponent* Mesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mat, meta = (AllowPrivateAccess))
+	UMaterialInterface* OutlineMat;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mat, meta = (AllowPrivateAccess))
+	bool isFocused = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mat, meta = (AllowPrivateAccess))
+	bool alreadyHighlighted;
+
+	void HighlightObject(bool Highlight);
+
+	UPROPERTY()
+	ACursedKingdomGameCharacter* Player;
 
 protected:
 	// Called when the game starts or when spawned
