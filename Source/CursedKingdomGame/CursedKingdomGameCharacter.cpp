@@ -134,6 +134,7 @@ void ACursedKingdomGameCharacter::HandlePOIMap(AItem* ItemToCheck , bool SetVisi
 	{
 		Map->TogglePOIVisibility(SetVisibility);
 	}
+	bHasMapInHand = SetVisibility;
 }
 
 void ACursedKingdomGameCharacter::Die()
@@ -263,7 +264,8 @@ void ACursedKingdomGameCharacter::Sprint(const FInputActionValue& Value)
 		bIsSprinting = false;
 		return;
 	}
-	if (!bIsWalking) return;
+	if (!bIsWalking||bIsInWater) return;
+	
 	bIsSprinting = Value.Get<bool>();
 
 	GetCharacterMovement()->MaxWalkSpeed = bIsSprinting ? MaxSprintMovementSpeed : MaxMovementSpeedDefault;
@@ -390,6 +392,7 @@ void ACursedKingdomGameCharacter::DropItem(const FInputActionValue& Value)
 
 	if(PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
 	{
+		HandlePOIMap(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex], false);
 		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->OnItemDrop();
 		PlayerInventory->ActivateItem();
 		ItemsInInventory--;
@@ -480,7 +483,7 @@ void ACursedKingdomGameCharacter::ManageHealth(float a_Delta)
 	}
 }
 
-void ACursedKingdomGameCharacter::TakeDamage(float a_Damage)
+void ACursedKingdomGameCharacter::TakePlayerDamage(float a_Damage)
 {
 	if(CurrentHealth> a_Damage)
 	{

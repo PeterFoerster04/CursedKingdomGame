@@ -136,6 +136,10 @@ public:
 	bool bIsOnCooldown = false;
 	bool bTestBool = false;
 	bool bIsFocusingItem = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Map, meta = (AllowPrivateAccess))
+	bool bHasMapInHand = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess))
+	bool bIsInWater = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Tuto, meta = (AllowPrivateAccess))
 	int CurrentTutoIndex = 0;
@@ -157,7 +161,7 @@ public:
 	void ManageStamina(float a_Delta);
 	void ManageHealth(float a_Delta);
 	UFUNCTION(BlueprintCallable)
-	void TakeDamage(float a_Damage);
+	void TakePlayerDamage(float a_Damage);
 	void ManagePostProcessEffects(float a_Delta);
 	void CheckForItemInFront();
 
