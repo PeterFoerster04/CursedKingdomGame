@@ -88,8 +88,9 @@ void ACursedKingdomGameCharacter::BeginPlay()
 	Instance = Cast<UKingdomGameInstance>( UGameplayStatics::GetGameInstance(CurrentWorld));
 	if(Instance != nullptr)
 	{
-		SetActorLocationAndRotation(Instance->SaveGameObject->SpawnPosition.GetLocation(), Instance->SaveGameObject->SpawnPosition.GetRotation());
+		//SetActorLocationAndRotation(Instance->SaveGameObject->SpawnPosition.GetLocation(), Instance->SaveGameObject->SpawnPosition.GetRotation());
 		MouseSens = Instance->SaveGameObject->MouseSens;
+		LoadInventory();
 	}
 	else
 	{
@@ -99,7 +100,7 @@ void ACursedKingdomGameCharacter::BeginPlay()
 	if (Instance->SaveGameObject->TutorialDone) CurrentTutoIndex = 0;
 	else CurrentTutoIndex = 1;
 
-	
+	CameraStartLoc = FirstPersonCameraComponent->GetRelativeLocation();
 }
 
 void ACursedKingdomGameCharacter::Tick(float DeltaSeconds)
@@ -112,6 +113,7 @@ void ACursedKingdomGameCharacter::Tick(float DeltaSeconds)
 	ManagePostProcessEffects(DeltaSeconds);
 	//UE_LOG(LogTemp, Display, TEXT("Health:%f"), CurrentHealth);
 	CheckForItemInFront();
+	ManageViewBobbing(DeltaSeconds);
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -552,6 +554,77 @@ void ACursedKingdomGameCharacter::CheckForItemInFront()
 		bIsFocusingItem = false;
 	}
 
+}
+
+void ACursedKingdomGameCharacter::ManageViewBobbing(float a_Delta)
+{
+
+	//Brauch eh kein Mensch
+	/*FVector BobPos;
+	BobPos.Z += FMath::Lerp(BobPos.Z, FMath::Sin(1.0f * a_Delta) * 100.0f, 20.0f*a_Delta);
+	FirstPersonCameraComponent->SetRelativeLocation(CameraStartLoc+BobPos);*/
+	
+
+}
+
+void ACursedKingdomGameCharacter::SaveInventory()
+{
+	
+	if (Instance != nullptr)
+	{
+		Instance->SaveGameObject->SavedPlayerInventory.Empty();
+
+		for (AItem* Item : PlayerInventory->ItemBundle)
+		{
+			if (Item == nullptr) continue;
+			//saving the names of items, since whole actors (cannot) should not be saved
+			//spawning items using these names and the blueprint list
+			UE_LOG(LogTemp, Display, TEXT("Saved Item into instance: %s"), *(UEnum::GetValueAsString(Item->Name)))
+			Instance->SaveGameObject->SavedPlayerInventory.Add(Item->Name);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("Inventory:Game Instace Null"));
+		return;
+	}
+	UE_LOG(LogTemp, Display, TEXT("Items Saved"));
+}
+
+void ACursedKingdomGameCharacter::LoadInventory()
+{
+	
+	if (Instance == nullptr)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Inventory:Game Instace Null"));
+		return;
+	}
+	if (Instance->SaveGameObject->SavedPlayerInventory.IsEmpty())
+	{
+		UE_LOG(LogTemp, Display, TEXT("Inventory empty, no items loaded"));
+		return;
+	}
+	UE_LOG(LogTemp, Display, TEXT("Trying to load inv items"));
+	//iterating through all saved item names and check if there is a subclass (Blueprint)
+	//corresponding to the name, to spawn new instance of actor and add into inventory
+	for (EItemName ItemName : Instance->SaveGameObject->SavedPlayerInventory)
+	{
+		for (TSubclassOf<AItem> ItemBlueprint : Instance->ListOfSavableItemBlueprints)
+		{
+		
+			if (ItemBlueprint.GetDefaultObject()->Name == ItemName)
+			{
+				AItem* SpawnedItem = CurrentWorld->SpawnActor<AItem>(ItemBlueprint);
+				UE_LOG(LogTemp, Display, TEXT("Inv Item Spawned: %s"), *(UEnum::GetValueAsString(ItemName)))
+				SpawnedItem->Mesh->SetSimulatePhysics(false);
+				SpawnedItem->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+				PlayerInventory->AddItem(SpawnedItem);
+				NameOfLastPickedItem = SpawnedItem->Name;
+				ItemsInInventory++;
+				break;
+			}
+		}
+	}
 }
 
 void ACursedKingdomGameCharacter::SetHasRifle(bool bNewHasRifle)

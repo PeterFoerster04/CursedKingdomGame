@@ -95,6 +95,7 @@ public:
 	float FOVTransitionSpeed = 1.5f;
 
 	FVector2D MovementVector;
+	FVector CameraStartLoc;
 
 
 	//Stats
@@ -164,6 +165,14 @@ public:
 	void TakePlayerDamage(float a_Damage);
 	void ManagePostProcessEffects(float a_Delta);
 	void CheckForItemInFront();
+	void ManageViewBobbing(float a_Delta);
+
+	//usually these functions belong into the inventory class
+	//but attaching actors in component classes caused issues
+	UFUNCTION(BlueprintCallable)
+	void SaveInventory();
+
+	void LoadInventory();
 
 	/** Setter to set the bool */
 	UFUNCTION(BlueprintCallable, Category = Weapon)

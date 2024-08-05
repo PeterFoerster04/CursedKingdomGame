@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EnumLibrary.h"
 #include "GameFramework/SaveGame.h"
 #include "KingdomSaveGame.generated.h"
 
@@ -33,5 +34,6 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	float Volume = 1.0f;
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<EItemName> SavedPlayerInventory;
 };
