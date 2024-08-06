@@ -20,5 +20,10 @@ enum class EItemName : uint8
 	SilberKit,
 	GoldKit,
 	Karte,
-	ENUM_MAX,
+	Minenschluessel,
+	Buch,
+	Glasflasche,
+	Heiltrank_Schmiedin,
+	Heiltrank_Vogelscheuche,
+	ENUM_MAX
 };
