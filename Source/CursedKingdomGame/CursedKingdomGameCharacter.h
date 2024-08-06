@@ -174,6 +174,9 @@ public:
 
 	void LoadInventory();
 
+
+	void TryToLoadSaveData();
+
 	/** Setter to set the bool */
 	UFUNCTION(BlueprintCallable, Category = Weapon)
 	void SetHasRifle(bool bNewHasRifle);

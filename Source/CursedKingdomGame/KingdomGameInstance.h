@@ -26,6 +26,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Saves, meta = (AllowPrivateAccess))
 	TArray<TSubclassOf<AItem>> ListOfSavableItemBlueprints;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Static, meta = (AllowPrivateAccess))
+	FVector HomePosition;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Static, meta = (AllowPrivateAccess))
+	FVector MineRespawnPosition;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Static, meta = (AllowPrivateAccess))
+	FVector ForgeRespawnPosition;
+
+	bool DiedInCave;
+	bool DiedInForge;
+	
+
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void LoadSaves();

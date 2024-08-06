@@ -36,4 +36,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<EItemName> SavedPlayerInventory;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool LoggedOutInCave;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool LoggedOutInForge;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool NotFirstSpawn;
+
 };

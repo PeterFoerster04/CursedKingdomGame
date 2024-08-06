@@ -84,21 +84,8 @@ void ACursedKingdomGameCharacter::BeginPlay()
 	}
 	//UE_LOG(LogTemp,Display,TEXT("%f"),FirstPersonCameraComponent->FieldOfView)
 	FirstPersonCameraComponent->FieldOfView = WalkFOV;
-
-	Instance = Cast<UKingdomGameInstance>( UGameplayStatics::GetGameInstance(CurrentWorld));
-	if(Instance != nullptr)
-	{
-		//SetActorLocationAndRotation(Instance->SaveGameObject->SpawnPosition.GetLocation(), Instance->SaveGameObject->SpawnPosition.GetRotation());
-		MouseSens = Instance->SaveGameObject->MouseSens;
-		LoadInventory();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Display, TEXT("Game Instace Null"));
-	}
-
-	if (Instance->SaveGameObject->TutorialDone) CurrentTutoIndex = 0;
-	else CurrentTutoIndex = 1;
+	TryToLoadSaveData();
+	
 
 	CameraStartLoc = FirstPersonCameraComponent->GetRelativeLocation();
 }
@@ -156,7 +143,19 @@ void ACursedKingdomGameCharacter::Die()
 
 void ACursedKingdomGameCharacter::Resurrect()
 {
-	SetActorLocation(Instance->SaveGameObject->DeathRespawnPoint.GetLocation());
+	//if player died in different map, going back to main map
+	if(CurrentWorld->GetName() == "Cave")
+	{
+		Instance->DiedInCave = true;
+		UGameplayStatics::OpenLevel(CurrentWorld, "FirstPersonMap");
+	}
+	else if(CurrentWorld->GetName() == "Schmiede")
+	{
+		Instance->DiedInForge = true;
+		UGameplayStatics::OpenLevel(CurrentWorld, "FirstPersonMap");
+	}
+	
+	SetActorLocation(Instance->HomePosition);
 	UGameplayStatics::GetPlayerCameraManager(CurrentWorld, 0)->StartCameraFade(1.0f, 0.0f, 1.5f, FLinearColor::Black, true, true);
 	
 	UE_LOG(LogTemp, Display, TEXT("REEEEES"));
@@ -625,6 +624,38 @@ void ACursedKingdomGameCharacter::LoadInventory()
 			}
 		}
 	}
+	if (PlayerInventory->CheckInventoryFull()) bPlayerInventoryFull = true;
+	
+}
+
+void ACursedKingdomGameCharacter::TryToLoadSaveData()
+{
+	Instance = Cast<UKingdomGameInstance>(UGameplayStatics::GetGameInstance(CurrentWorld));
+	if (Instance != nullptr)
+	{
+		if (Instance->DiedInForge)
+		{
+			SetActorLocation(Instance->ForgeRespawnPosition);
+			Instance->DiedInForge = false;
+		}
+		else if (Instance->DiedInCave)
+		{
+			SetActorLocation(Instance->MineRespawnPosition);
+			Instance->DiedInCave = false;
+		}
+		else if (CurrentWorld->GetName() == "FirstPersonMap"&&Instance->SaveGameObject->NotFirstSpawn) {
+			SetActorLocationAndRotation(Instance->SaveGameObject->SpawnPosition.GetLocation(), Instance->SaveGameObject->SpawnPosition.GetRotation());
+		}
+		MouseSens = Instance->SaveGameObject->MouseSens;
+		LoadInventory();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("Game Instace Null"));
+	}
+	
+	if (Instance->SaveGameObject->TutorialDone) CurrentTutoIndex = 0;
+	else CurrentTutoIndex = 1;
 }
 
 void ACursedKingdomGameCharacter::SetHasRifle(bool bNewHasRifle)
