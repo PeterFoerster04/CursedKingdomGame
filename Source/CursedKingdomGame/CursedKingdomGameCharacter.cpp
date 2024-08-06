@@ -146,12 +146,12 @@ void ACursedKingdomGameCharacter::Resurrect()
 	//if player died in different map, going back to main map
 	if(CurrentWorld->GetName() == "Cave")
 	{
-		Instance->DiedInCave = true;
+		Instance->CameFromCave = true;
 		UGameplayStatics::OpenLevel(CurrentWorld, "FirstPersonMap");
 	}
 	else if(CurrentWorld->GetName() == "Schmiede")
 	{
-		Instance->DiedInForge = true;
+		Instance->CameFromForge = true;
 		UGameplayStatics::OpenLevel(CurrentWorld, "FirstPersonMap");
 	}
 	
@@ -633,15 +633,15 @@ void ACursedKingdomGameCharacter::TryToLoadSaveData()
 	Instance = Cast<UKingdomGameInstance>(UGameplayStatics::GetGameInstance(CurrentWorld));
 	if (Instance != nullptr)
 	{
-		if (Instance->DiedInForge)
+		if (Instance->CameFromForge)
 		{
 			SetActorLocation(Instance->ForgeRespawnPosition);
-			Instance->DiedInForge = false;
+			Instance->CameFromForge = false;
 		}
-		else if (Instance->DiedInCave)
+		else if (Instance->CameFromCave)
 		{
 			SetActorLocation(Instance->MineRespawnPosition);
-			Instance->DiedInCave = false;
+			Instance->CameFromCave = false;
 		}
 		else if (CurrentWorld->GetName() == "FirstPersonMap"&&Instance->SaveGameObject->NotFirstSpawn) {
 			SetActorLocationAndRotation(Instance->SaveGameObject->SpawnPosition.GetLocation(), Instance->SaveGameObject->SpawnPosition.GetRotation());

@@ -32,9 +32,10 @@ public:
 	FVector MineRespawnPosition;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Static, meta = (AllowPrivateAccess))
 	FVector ForgeRespawnPosition;
-
-	bool DiedInCave;
-	bool DiedInForge;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Static, meta = (AllowPrivateAccess))
+	bool CameFromCave;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Static, meta = (AllowPrivateAccess))
+	bool CameFromForge;
 	
 
 
