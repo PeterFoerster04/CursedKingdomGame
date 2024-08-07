@@ -23,7 +23,13 @@ enum class EItemName : uint8
 	Minenschluessel,
 	Buch,
 	Glasflasche,
-	Heiltrank_Schmiedin,
-	Heiltrank_Vogelscheuche,
+	Schmiedintrank,
+	Vogelscheuchentrank,
+	Naegel,
+	Vase,
+	Zange,
+	Schriftrolle,
+	MiniAmboss,
+	Holz,
 	ENUM_MAX
 };
