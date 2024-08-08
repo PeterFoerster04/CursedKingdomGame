@@ -13,8 +13,11 @@
 #include "InputActionValue.h"
 #include "Inventory.h"
 #include "Item.h"
+#include "KingdomGameInstance.h"
+#include "POIMap.h"
 #include "Engine/LocalPlayer.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -81,7 +84,10 @@ void ACursedKingdomGameCharacter::BeginPlay()
 	}
 	//UE_LOG(LogTemp,Display,TEXT("%f"),FirstPersonCameraComponent->FieldOfView)
 	FirstPersonCameraComponent->FieldOfView = WalkFOV;
+	TryToLoadSaveData();
+	
 
+	CameraStartLoc = FirstPersonCameraComponent->GetRelativeLocation();
 }
 
 void ACursedKingdomGameCharacter::Tick(float DeltaSeconds)
@@ -92,10 +98,71 @@ void ACursedKingdomGameCharacter::Tick(float DeltaSeconds)
 	ManageStamina(DeltaSeconds);
 	ManageHealth(DeltaSeconds);
 	ManagePostProcessEffects(DeltaSeconds);
-	UE_LOG(LogTemp, Display, TEXT("Health:%f"), CurrentHealth);
+	//UE_LOG(LogTemp, Display, TEXT("Health:%f"), CurrentHealth);
+	CheckForItemInFront();
+	ManageViewBobbing(DeltaSeconds);
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
+
+void ACursedKingdomGameCharacter::CheckJumpTuto()
+{
+
+	if (!Instance->SaveGameObject->TutorialDone && CurrentTutoIndex == 2&&!TutoBlocked)
+	{
+		CurrentTutoIndex++;
+		TutoBlocked = true;
+	}
+}
+
+void ACursedKingdomGameCharacter::HandlePOIMap(AItem* ItemToCheck , bool SetVisibility)
+{
+	if (ItemToCheck->Name != EItemName::Karte) return;
+
+	if(APOIMap* Map = Cast<APOIMap>(ItemToCheck))
+	{
+		Map->TogglePOIVisibility(SetVisibility);
+	}
+	bHasMapInHand = SetVisibility;
+}
+
+void ACursedKingdomGameCharacter::Die()
+{
+	
+	PlayerDied = true;
+	UGameplayStatics::GetPlayerCameraManager(CurrentWorld, 0)->StartCameraFade(0.0f, 1.0f, 1.5f, FLinearColor::Black, true,true);
+	
+	FInputModeUIOnly input;
+	UGameplayStatics::GetPlayerController(CurrentWorld, 0)->SetInputMode(input);
+	UGameplayStatics::GetPlayerController(CurrentWorld, 0)->PlayerInput->FlushPressedKeys();
+	GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &ACursedKingdomGameCharacter::Resurrect, 3.0f);
+	
+	CurrentHealth = MaxHealth;
+	CurrentStamina = MaxStamina;
+}
+
+void ACursedKingdomGameCharacter::Resurrect()
+{
+	//if player died in different map, going back to main map
+	if(CurrentWorld->GetName() == "Cave")
+	{
+		Instance->CameFromCave = true;
+		UGameplayStatics::OpenLevel(CurrentWorld, "FirstPersonMap");
+	}
+	else if(CurrentWorld->GetName() == "Schmiede")
+	{
+		Instance->CameFromForge = true;
+		UGameplayStatics::OpenLevel(CurrentWorld, "FirstPersonMap");
+	}
+	
+	SetActorLocation(Instance->HomePosition);
+	UGameplayStatics::GetPlayerCameraManager(CurrentWorld, 0)->StartCameraFade(1.0f, 0.0f, 1.5f, FLinearColor::Black, true, true);
+	
+	UE_LOG(LogTemp, Display, TEXT("REEEEES"));
+	PlayerDied = false;
+	FInputModeGameOnly input;
+	UGameplayStatics::GetPlayerController(CurrentWorld, 0)->SetInputMode(input);
+}
 
 void ACursedKingdomGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -121,18 +188,38 @@ void ACursedKingdomGameCharacter::SetupPlayerInputComponent(UInputComponent* Pla
 		EnhancedInputComponent->BindAction(ItemDropAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::DropItem);
 
 		EnhancedInputComponent->BindAction(ItemThrowAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::ThrowItem);
+
+		
 	}
 	else
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+	
 }
 
 
 void ACursedKingdomGameCharacter::Move(const FInputActionValue& Value)
 {
+
+
 	// input is a Vector2D
 	MovementVector = Value.Get<FVector2D>();
+	if(!Instance->SaveGameObject->TutorialDone &&CurrentTutoIndex ==1&& !TutoBlocked)
+	{
+		if (MovementVector.X == 1.0f)  TutoBoolsToCheck.pressedD = true; 
+		else if (MovementVector.X == -1.0f) TutoBoolsToCheck.pressedA = true;
+		else if (MovementVector.Y == 1.0f)  TutoBoolsToCheck.pressedW = true;
+		else if (MovementVector.Y == -1.0f) TutoBoolsToCheck.pressedS = true;
+
+		if (TutoBoolsToCheck.pressedW && TutoBoolsToCheck.pressedA && TutoBoolsToCheck.pressedS && TutoBoolsToCheck.pressedD)
+		{
+			UE_LOG(LogTemp, Display, TEXT("WASD Pressed"));
+			CurrentTutoIndex++;
+			TutoBlocked = true;
+		}
+
+	}
 
 	if (Controller != nullptr)
 	{
@@ -153,6 +240,7 @@ void ACursedKingdomGameCharacter::Move(const FInputActionValue& Value)
 
 void ACursedKingdomGameCharacter::Look(const FInputActionValue& Value)
 {
+	
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
@@ -166,11 +254,19 @@ void ACursedKingdomGameCharacter::Look(const FInputActionValue& Value)
 
 void ACursedKingdomGameCharacter::Sprint(const FInputActionValue& Value)
 {
+
+	if (!Instance->SaveGameObject->TutorialDone && CurrentTutoIndex == 3 && !TutoBlocked)
+	{
+		CurrentTutoIndex++;
+		TutoBlocked = true;
+	}
+	
 	if (bIsOnCooldown) {
 		bIsSprinting = false;
 		return;
 	}
-	if (!bIsWalking) return;
+	if (!bIsWalking||bIsInWater) return;
+	
 	bIsSprinting = Value.Get<bool>();
 
 	GetCharacterMovement()->MaxWalkSpeed = bIsSprinting ? MaxSprintMovementSpeed : MaxMovementSpeedDefault;
@@ -180,6 +276,12 @@ void ACursedKingdomGameCharacter::Sprint(const FInputActionValue& Value)
 
 void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 {
+	if (!Instance->SaveGameObject->TutorialDone && CurrentTutoIndex == 4 && !TutoBlocked)
+	{
+		CurrentTutoIndex++;
+		TutoBlocked = true;
+	}
+	
 	//UE_LOG(LogTemp,Display,TEXT("Interact press"))
 
 	FHitResult Hit;
@@ -191,7 +293,7 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 	QueryParams.AddIgnoredActor(this);
 
 	CurrentWorld->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Pawn, QueryParams);
-	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 10.0f);
+	//DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 10.0f);
 
 	// If the trace hit something, bBlockingHit will be true,
 	// and its fields will be filled with detailed info about what was hit
@@ -237,6 +339,11 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 //thats why the move item function seems kind of useless now
 void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 {
+	if (!Instance->SaveGameObject->TutorialDone && CurrentTutoIndex == 5 && !TutoBlocked)
+	{
+		CurrentTutoIndex++;
+		TutoBlocked = true;
+	}
 	float scroll = Value.Get<float>();
 
 	//if scrolling gets out of range of (into negative or max inventory size) return
@@ -247,6 +354,8 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 	{
 		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->
 		AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
+		HandlePOIMap(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex],false);
 		PlayerInventory->MoveItem();
 	}
 	
@@ -258,6 +367,8 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 	{
 		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->
 			AttachToComponent(ItemHoldSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
+		HandlePOIMap(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex], true);
 		PlayerInventory->MoveItem(false);
 		NameOfCurrentItemInHand = PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->Name;
 	}
@@ -272,10 +383,17 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 
 void ACursedKingdomGameCharacter::DropItem(const FInputActionValue& Value)
 {
+	if (!Instance->SaveGameObject->TutorialDone && CurrentTutoIndex == 6 && !TutoBlocked)
+	{
+		CurrentTutoIndex++;
+		TutoBlocked = true;
+	}
+	
 	float input = Value.Get<float>();
 
 	if(PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
 	{
+		HandlePOIMap(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex], false);
 		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->OnItemDrop();
 		PlayerInventory->ActivateItem();
 		ItemsInInventory--;
@@ -288,7 +406,12 @@ void ACursedKingdomGameCharacter::DropItem(const FInputActionValue& Value)
 
 void ACursedKingdomGameCharacter::ThrowItem(const FInputActionValue& Value)
 {
-	
+	if (!Instance->SaveGameObject->TutorialDone && CurrentTutoIndex == 7 && !TutoBlocked)
+	{
+		CurrentTutoIndex = 0;
+		TutoBlocked = true;
+		Instance->SaveGameObject->TutorialDone = true;
+	}
 	float input = Value.Get<float>();
 
 	if (PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
@@ -361,7 +484,7 @@ void ACursedKingdomGameCharacter::ManageHealth(float a_Delta)
 	}
 }
 
-void ACursedKingdomGameCharacter::TakeDamage(float a_Damage)
+void ACursedKingdomGameCharacter::TakePlayerDamage(float a_Damage)
 {
 	if(CurrentHealth> a_Damage)
 	{
@@ -370,7 +493,8 @@ void ACursedKingdomGameCharacter::TakeDamage(float a_Damage)
 	else
 	{
 		CurrentHealth = 0;
-		PlayerDied = true;
+		if(!PlayerDied)Die();
+		
 	}
 }
 
@@ -396,6 +520,142 @@ void ACursedKingdomGameCharacter::ManagePostProcessEffects(float a_Delta)
 	}
 
 
+}
+
+void ACursedKingdomGameCharacter::CheckForItemInFront()
+{
+	FHitResult Hit;
+	FVector TraceStart = FirstPersonCameraComponent->GetComponentLocation();
+	FVector TraceEnd = FirstPersonCameraComponent->GetComponentLocation() + FirstPersonCameraComponent->GetForwardVector() * MaxInteractRange;
+
+	//ignore own actor
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	CurrentWorld->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Pawn, QueryParams);
+	//DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 10.0f);
+
+	if (Hit.bBlockingHit && Hit.GetActor() != nullptr)
+	{
+		AItem* PossibleItem = Cast<AItem>(Hit.GetActor());
+		if(PossibleItem != nullptr)
+		{
+			PossibleItem->isFocused = true;
+			bIsFocusingItem = true;
+		}
+		else
+		{
+			bIsFocusingItem = false;
+		}
+	}
+	else
+	{
+		bIsFocusingItem = false;
+	}
+
+}
+
+void ACursedKingdomGameCharacter::ManageViewBobbing(float a_Delta)
+{
+
+	//Brauch eh kein Mensch
+	/*FVector BobPos;
+	BobPos.Z += FMath::Lerp(BobPos.Z, FMath::Sin(1.0f * a_Delta) * 100.0f, 20.0f*a_Delta);
+	FirstPersonCameraComponent->SetRelativeLocation(CameraStartLoc+BobPos);*/
+	
+
+}
+
+void ACursedKingdomGameCharacter::SaveInventory()
+{
+	
+	if (Instance != nullptr)
+	{
+		Instance->SaveGameObject->SavedPlayerInventory.Empty();
+
+		for (AItem* Item : PlayerInventory->ItemBundle)
+		{
+			if (Item == nullptr) continue;
+			//saving the names of items, since whole actors (cannot) should not be saved
+			//spawning items using these names and the blueprint list
+			UE_LOG(LogTemp, Display, TEXT("Saved Item into instance: %s"), *(UEnum::GetValueAsString(Item->Name)))
+			Instance->SaveGameObject->SavedPlayerInventory.Add(Item->Name);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("Inventory:Game Instace Null"));
+		return;
+	}
+	UE_LOG(LogTemp, Display, TEXT("Items Saved"));
+}
+
+void ACursedKingdomGameCharacter::LoadInventory()
+{
+	
+	if (Instance == nullptr)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Inventory:Game Instace Null"));
+		return;
+	}
+	if (Instance->SaveGameObject->SavedPlayerInventory.IsEmpty())
+	{
+		UE_LOG(LogTemp, Display, TEXT("Inventory empty, no items loaded"));
+		return;
+	}
+	UE_LOG(LogTemp, Display, TEXT("Trying to load inv items"));
+	//iterating through all saved item names and check if there is a subclass (Blueprint)
+	//corresponding to the name, to spawn new instance of actor and add into inventory
+	for (EItemName ItemName : Instance->SaveGameObject->SavedPlayerInventory)
+	{
+		for (TSubclassOf<AItem> ItemBlueprint : Instance->ListOfSavableItemBlueprints)
+		{
+		
+			if (ItemBlueprint.GetDefaultObject()->Name == ItemName)
+			{
+				AItem* SpawnedItem = CurrentWorld->SpawnActor<AItem>(ItemBlueprint);
+				UE_LOG(LogTemp, Display, TEXT("Inv Item Spawned: %s"), *(UEnum::GetValueAsString(ItemName)))
+				SpawnedItem->Mesh->SetSimulatePhysics(false);
+				SpawnedItem->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+				PlayerInventory->AddItem(SpawnedItem);
+				NameOfLastPickedItem = SpawnedItem->Name;
+				ItemsInInventory++;
+				break;
+			}
+		}
+	}
+	if (PlayerInventory->CheckInventoryFull()) bPlayerInventoryFull = true;
+	
+}
+
+void ACursedKingdomGameCharacter::TryToLoadSaveData()
+{
+	Instance = Cast<UKingdomGameInstance>(UGameplayStatics::GetGameInstance(CurrentWorld));
+	if (Instance != nullptr)
+	{
+		if (Instance->CameFromForge)
+		{
+			SetActorLocation(Instance->ForgeRespawnPosition);
+			Instance->CameFromForge = false;
+		}
+		else if (Instance->CameFromCave)
+		{
+			SetActorLocation(Instance->MineRespawnPosition);
+			Instance->CameFromCave = false;
+		}
+		else if (CurrentWorld->GetName() == "FirstPersonMap"&&Instance->SaveGameObject->NotFirstSpawn) {
+			SetActorLocationAndRotation(Instance->SaveGameObject->SpawnPosition.GetLocation(), Instance->SaveGameObject->SpawnPosition.GetRotation());
+		}
+		MouseSens = Instance->SaveGameObject->MouseSens;
+		LoadInventory();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("Game Instace Null"));
+	}
+	
+	if (Instance->SaveGameObject->TutorialDone) CurrentTutoIndex = 0;
+	else CurrentTutoIndex = 1;
 }
 
 void ACursedKingdomGameCharacter::SetHasRifle(bool bNewHasRifle)

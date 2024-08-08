@@ -2,8 +2,8 @@
 
 
 #include "Inventory.h"
-
 #include "CursedKingdomGameCharacter.h"
+#include "KingdomGameInstance.h"
 #include "Item.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -16,6 +16,7 @@ UInventory::UInventory()
 
 	InitInventory();
 }
+
 
 void UInventory::InitInventory()
 {

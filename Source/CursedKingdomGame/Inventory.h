@@ -23,7 +23,7 @@ public:
 	int InventorySize = 5;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	TArray<AItem*> ItemBundle;
-	
+
 
 	void InitInventory();
 	void AddItem(AItem* a_ItemToAdd);
