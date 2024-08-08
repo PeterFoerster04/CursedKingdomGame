@@ -21,6 +21,7 @@ enum class EItemName : uint8
 	GoldKit,
 	Karte,
 	Minenschluessel,
+	Buchstapel,
 	Buch,
 	Glasflasche,
 	Schmiedintrank,
@@ -31,5 +32,6 @@ enum class EItemName : uint8
 	Schriftrolle,
 	MiniAmboss,
 	Holz,
+	Kissen,
 	ENUM_MAX
 };

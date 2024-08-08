@@ -653,7 +653,7 @@ void ACursedKingdomGameCharacter::TryToLoadSaveData()
 		else if (CurrentWorld->GetName() == "FirstPersonMap"&&Instance->SaveGameObject->NotFirstSpawn) {
 			SetActorLocationAndRotation(Instance->SaveGameObject->SpawnPosition.GetLocation(), Instance->SaveGameObject->SpawnPosition.GetRotation());
 		}
-		MouseSens = Instance->SaveGameObject->MouseSens;
+		MouseSens = Instance->SettingsSaveGameObject->MouseSens;
 		LoadInventory();
 	}
 	else

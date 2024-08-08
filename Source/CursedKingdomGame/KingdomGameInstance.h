@@ -5,8 +5,10 @@
 #include "CoreMinimal.h"
 #include "Item.h"
 #include "KingdomSaveGame.h"
+#include "KingdomSaveGameSettings.h"
 #include "Engine/GameInstance.h"
 #include "KingdomGameInstance.generated.h"
+
 
 
 /**
@@ -20,6 +22,8 @@ class CURSEDKINGDOMGAME_API UKingdomGameInstance : public UGameInstance
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Saves, meta = (AllowPrivateAccess))
 	UKingdomSaveGame* SaveGameObject;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Saves, meta = (AllowPrivateAccess))
+	UKingdomSaveGameSettings* SettingsSaveGameObject;
 
 	//this list stores all Blueprint classes that can be picked up so that they can be spawned in again and added to the
 	//player inventory on load
@@ -43,4 +47,8 @@ public:
 	void LoadSaves();
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void SaveSaves();
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void LoadSettingsSave();
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void SaveSettingsSave();
 };
