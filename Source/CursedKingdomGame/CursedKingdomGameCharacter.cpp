@@ -281,9 +281,16 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 		CurrentTutoIndex++;
 		TutoBlocked = true;
 	}
-	
+	//only used for blueprints, also reset when used
+	bPressedInteract = true;
 	//UE_LOG(LogTemp,Display,TEXT("Interact press"))
-
+	UE_LOG(LogTemp,Display,TEXT("Interact Press:%i"),Value.Get<bool>())
+	//do not perform interaction when letting key go
+	if(Value.Get<bool>() == false)
+	{
+		bPressedInteract = false;
+		return;
+	}
 	FHitResult Hit;
 	FVector TraceStart = FirstPersonCameraComponent->GetComponentLocation();
 	FVector TraceEnd = FirstPersonCameraComponent->GetComponentLocation() + FirstPersonCameraComponent->GetForwardVector() * MaxInteractRange;
@@ -646,7 +653,7 @@ void ACursedKingdomGameCharacter::TryToLoadSaveData()
 		else if (CurrentWorld->GetName() == "FirstPersonMap"&&Instance->SaveGameObject->NotFirstSpawn) {
 			SetActorLocationAndRotation(Instance->SaveGameObject->SpawnPosition.GetLocation(), Instance->SaveGameObject->SpawnPosition.GetRotation());
 		}
-		MouseSens = Instance->SaveGameObject->MouseSens;
+		MouseSens = Instance->SettingsSaveGameObject->MouseSens;
 		LoadInventory();
 	}
 	else

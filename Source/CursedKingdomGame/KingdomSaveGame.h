@@ -29,11 +29,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool HealedScarecrow = false;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	float MouseSens = 1.0f;
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	float Volume = 1.0f;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<EItemName> SavedPlayerInventory;
 

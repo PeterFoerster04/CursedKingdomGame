@@ -39,6 +39,7 @@ public:
 	UPROPERTY()
 	ACursedKingdomGameCharacter* Player;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	int CurrentItemOutIndex = 0;
 
 protected:
