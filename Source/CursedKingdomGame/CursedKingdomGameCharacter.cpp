@@ -130,12 +130,13 @@ void ACursedKingdomGameCharacter::Die()
 {
 	
 	PlayerDied = true;
+	OnPlayerDied();
 	UGameplayStatics::GetPlayerCameraManager(CurrentWorld, 0)->StartCameraFade(0.0f, 1.0f, 1.5f, FLinearColor::Black, true,true);
 	
 	FInputModeUIOnly input;
 	UGameplayStatics::GetPlayerController(CurrentWorld, 0)->SetInputMode(input);
 	UGameplayStatics::GetPlayerController(CurrentWorld, 0)->PlayerInput->FlushPressedKeys();
-	GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &ACursedKingdomGameCharacter::Resurrect, 3.0f);
+	GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &ACursedKingdomGameCharacter::Resurrect, 5.0f);
 	
 	CurrentHealth = MaxHealth;
 	CurrentStamina = MaxStamina;

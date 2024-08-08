@@ -218,7 +218,8 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnItemSwap();
-
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnPlayerDied();
 	
 	void Die();
 
