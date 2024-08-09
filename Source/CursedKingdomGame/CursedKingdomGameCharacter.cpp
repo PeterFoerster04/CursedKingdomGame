@@ -126,6 +126,16 @@ void ACursedKingdomGameCharacter::HandlePOIMap(AItem* ItemToCheck , bool SetVisi
 	bHasMapInHand = SetVisibility;
 }
 
+void ACursedKingdomGameCharacter::HandleFogMooshroom(AItem* ItemToCheck, bool ActivateAbility)
+{
+	if (ItemToCheck->Name != EItemName::NebelPilz) return;
+
+	
+	ItemToCheck->SetActorEnableCollision(ActivateAbility);
+	
+	
+}
+
 void ACursedKingdomGameCharacter::Die()
 {
 	
@@ -364,6 +374,7 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 		AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
 		HandlePOIMap(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex],false);
+		HandleFogMooshroom(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex], false);
 		PlayerInventory->MoveItem();
 	}
 	
@@ -377,6 +388,7 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 			AttachToComponent(ItemHoldSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
 		HandlePOIMap(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex], true);
+		HandleFogMooshroom(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex], true);
 		PlayerInventory->MoveItem(false);
 		NameOfCurrentItemInHand = PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->Name;
 	}

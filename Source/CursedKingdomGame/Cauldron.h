@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Item.h"
 #include "GameFramework/Actor.h"
 #include "Cauldron.generated.h"
 
+class UNiagaraComponent;
 class URecipe;
 class ARecipeItem;
 class URecipeList;
@@ -38,7 +40,12 @@ public:
 	//spawn this every time cauldron explodes
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
 	UNiagaraSystem* ExplosionSystem;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
+	UNiagaraSystem* ItemInsertSystem;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
+	UNiagaraComponent* IdleBrewer;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
+	UNiagaraComponent* ProcessBrewer;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effects, meta = (AllowPrivateAccess))
 		FVector ExplosionSpawnOffset;
@@ -76,6 +83,8 @@ public:
 	void MakePotion();
 	void SetPotionReady();
 	void UpgradeCauldron();
+	void DeactivateItem(AItem* Item);
+	void SpawnInsertSystem();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnItemInsert();
