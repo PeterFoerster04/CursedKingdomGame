@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "Cauldron.generated.h"
 
+class AKeyItem;
 class UNiagaraComponent;
 class URecipe;
 class ARecipeItem;
@@ -57,11 +58,14 @@ public:
 	float PotionBrewingTime = 8.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Brewing, meta = (AllowPrivateAccess))
 	bool CurrentlyBrewing = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Brewing, meta = (AllowPrivateAccess))
+	bool PotionReady;
 
 	FTimerHandle TimerHandle;
 
 	bool IsUpgraded = false;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Brewing, meta = (AllowPrivateAccess))
+	TSubclassOf<AKeyItem> CurrentPotionInCauldron;
 
 protected:
 	// Called when the game starts or when spawned
@@ -85,6 +89,12 @@ public:
 	void UpgradeCauldron();
 	void DeactivateItem(AItem* Item);
 	void SpawnInsertSystem();
+	void DetermineCurrentPotion();
+
+	UFUNCTION(BlueprintCallable)
+	void SwapGlasForPotion(int CurrentOutIndex, ACursedKingdomGameCharacter* Player);
+
+
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnItemInsert();
@@ -100,4 +110,6 @@ public:
 	void OnWrongItemInsert();
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnUpgradeCauldron();
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnTakeOutPotion();
 };

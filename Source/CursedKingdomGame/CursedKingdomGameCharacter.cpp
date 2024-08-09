@@ -324,7 +324,7 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 	}
 	AItem* PossibleItem = Cast<AItem>(Hit.GetActor());
 	ACauldron* PossibleCauldron = Cast<ACauldron>(Hit.GetActor());
-	if(PossibleCauldron != nullptr&&!PossibleCauldron->IsUpgraded&&PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->Name == EItemName::GoldKit)
+	if(PossibleCauldron != nullptr&&!PossibleCauldron->IsUpgraded&& PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex] !=nullptr &&PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->Name == EItemName::GoldKit)
 	{
 		PossibleCauldron->UpgradeCauldron();
 		PlayerInventory->RemoveItemInHand();
@@ -336,13 +336,14 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 	if (PossibleItem != nullptr && !PlayerInventory->CheckInventoryFull())
 	{
 		UE_LOG(LogTemp, Log, TEXT("Picked Up Actor: %s"), *PossibleItem->GetName());
-		PossibleItem->OnItemPickUp();
+		PickUpItem(PossibleItem);
+		/*PossibleItem->OnItemPickUp();
 		PossibleItem->Mesh->SetSimulatePhysics(false);
 		PossibleItem->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		PlayerInventory->AddItem(PossibleItem);
 		NameOfLastPickedItem = PossibleItem->Name;
 		bJustPickedUpItem = true;
-		ItemsInInventory++;
+		ItemsInInventory++;*/
 	}
 	if(PlayerInventory->CheckInventoryFull())
 	{
@@ -676,6 +677,18 @@ void ACursedKingdomGameCharacter::TryToLoadSaveData()
 	
 	if (Instance->SaveGameObject->TutorialDone) CurrentTutoIndex = 0;
 	else CurrentTutoIndex = 1;
+}
+
+void ACursedKingdomGameCharacter::PickUpItem(AItem* Item)
+{
+	Item->OnItemPickUp();
+	Item->Mesh->SetSimulatePhysics(false);
+	Item->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	PlayerInventory->AddItem(Item);
+	NameOfLastPickedItem = Item->Name;
+	bJustPickedUpItem = true;
+	ItemsInInventory++;
+
 }
 
 void ACursedKingdomGameCharacter::SetHasRifle(bool bNewHasRifle)

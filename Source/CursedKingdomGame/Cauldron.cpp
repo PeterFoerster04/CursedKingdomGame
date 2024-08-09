@@ -6,6 +6,7 @@
 #include <d3d12sdklayers.h>
 
 #include "CursedKingdomGameCharacter.h"
+#include "Inventory.h"
 #include "Item.h"
 #include "RecipeItem.h"
 #include "RecipeList.h"
@@ -13,7 +14,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Recipe.h"
-
+#include "KeyItem.h"
 
 // Sets default values
 ACauldron::ACauldron()
@@ -69,7 +70,7 @@ void ACauldron::OnSphereTriggerOverlap(UPrimitiveComponent* OverlappedComponent,
 	}
 	else if (PossibleItem !=nullptr&&!CurrentlyBrewing)
 	{
-	
+		PotionReady = false;
 		UE_LOG(LogTemp, Display, TEXT("Item Overlap"))
 		OnItemInsert();
 		SpawnInsertSystem();
@@ -78,6 +79,7 @@ void ACauldron::OnSphereTriggerOverlap(UPrimitiveComponent* OverlappedComponent,
 	}
 	else if(PossibleItem != nullptr && CurrentlyBrewing)
 	{
+		
 		UE_LOG(LogTemp, Display, TEXT("Still Brewing"))
 		SpawnInsertSystem();
 		DeactivateItem(PossibleItem);
@@ -85,6 +87,7 @@ void ACauldron::OnSphereTriggerOverlap(UPrimitiveComponent* OverlappedComponent,
 	}
 	else if(MaybeItem!= nullptr)
 	{
+		PotionReady = false;
 		UE_LOG(LogTemp, Display, TEXT("Wrong Item KekW"))
 		DeactivateItem(MaybeItem);
 		
@@ -150,9 +153,11 @@ void ACauldron::CheckItemForRecipe(ARecipeItem* Item)
 	}
 	else if(CurrentPossibleRecipes.Num() == 1&& CurrentPossibleRecipes[0]->Ingredients.Num() == CurrentItemsInCauldron.Num())
 	{
-
+		
 		UE_LOG(LogTemp, Display, TEXT("Brewing Potion"))
 		CurrentlyBrewing = true;
+		CurrentPotionInCauldron = CurrentPossibleRecipes[0]->ResultingPotion;
+		//DetermineCurrentPotion();
 		OnStartBrewing();
 		MakePotion();
 		DumpContents();
@@ -187,6 +192,7 @@ void ACauldron::SetPotionReady()
 {
 	ProcessBrewer->Deactivate();
 	CurrentlyBrewing = false;
+	PotionReady = true;
 	UE_LOG(LogTemp, Display, TEXT("Success, brewed Potion"))
 	OnFinishedBrewing();
 }
@@ -201,6 +207,7 @@ void ACauldron::UpgradeCauldron()
 
 void ACauldron::DeactivateItem(AItem* Item)
 {
+	PotionReady = false;
 	Item->Mesh->SetVisibility(false);
 	Item->SetActorEnableCollision(false);
 	Item->SetActorHiddenInGame(true);
@@ -210,6 +217,45 @@ void ACauldron::DeactivateItem(AItem* Item)
 void ACauldron::SpawnInsertSystem()
 {
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ItemInsertSystem, Mesh->GetComponentLocation()+FVector(0,0,65.0f));
+}
+
+void ACauldron::DetermineCurrentPotion()
+{
+
+
+	
+
+}
+
+void ACauldron::SwapGlasForPotion(int CurrentOutIndex, ACursedKingdomGameCharacter* Player)
+{
+	
+	if(Player == nullptr||Player->PlayerInventory->ItemBundle[CurrentOutIndex]==nullptr)
+	{
+		return;
+	}
+	AItem* ThrowAwayItem = Player->PlayerInventory->ItemBundle[CurrentOutIndex];
+
+	Player->PlayerInventory->ActivateItemHidden();
+	Player->ItemsInInventory--;
+	Player->bPlayerInventoryFull = false;
+	Player->NameOfCurrentItemInHand = EItemName::DEFAULT;
+
+	if(CurrentPotionInCauldron == nullptr) return;
+
+	OnTakeOutPotion();
+	
+	FActorSpawnParameters Parameters;
+	AKeyItem* ItemActor = GetWorld()->SpawnActor<AKeyItem>(CurrentPotionInCauldron,Player->GetMesh()->GetComponentLocation(),FRotator(), Parameters);
+
+
+	if(ItemActor != nullptr)
+	{
+		Player->PickUpItem(ItemActor);
+	}
+	
+	
+
 }
 
 

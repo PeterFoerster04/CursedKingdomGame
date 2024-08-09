@@ -31,6 +31,8 @@ public:
 
 	void DeactivateItem(AItem* a_ItemToAdd);
 	void ActivateItem(bool a_bUseForce = false, FVector a_ThrowDirection = FVector::ZeroVector, float a_Force = 0.0f);
+	void ActivateItemHidden();
+
 
 	void MoveItem(bool a_ToBack = true);
 	bool CheckInventoryFull();

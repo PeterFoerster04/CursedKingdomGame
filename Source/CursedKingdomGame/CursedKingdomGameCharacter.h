@@ -175,8 +175,10 @@ public:
 
 	void LoadInventory();
 
-
 	void TryToLoadSaveData();
+
+
+	void PickUpItem(AItem* Item);
 
 	/** Setter to set the bool */
 	UFUNCTION(BlueprintCallable, Category = Weapon)
