@@ -189,6 +189,7 @@ public:
 	void CheckJumpTuto();
 
 	void HandlePOIMap(AItem* ItemToCheck, bool SetVisibility);
+	void HandleFogMooshroom(AItem* ItemToCheck, bool ActivateAbility);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	USceneComponent* ItemStoreSpot;

@@ -31,7 +31,11 @@ ACauldron::ACauldron()
 	PotionSoupMesh->SetupAttachment(RootComponent);
 
 	RecipeContainer = CreateDefaultSubobject<URecipeList>("RecipeContainer");
+	IdleBrewer = CreateDefaultSubobject<UNiagaraComponent>("Brewer");
+	IdleBrewer->SetupAttachment(RootComponent);
 
+	ProcessBrewer = CreateDefaultSubobject<UNiagaraComponent>("ProcessBrewer");
+	ProcessBrewer->SetupAttachment(RootComponent);
 	
 }
 
@@ -42,6 +46,7 @@ void ACauldron::BeginPlay()
 	ItemTrigger->OnComponentBeginOverlap.AddDynamic(this, &ACauldron::OnSphereTriggerOverlap);
 	CurrentPossibleRecipes = RecipeContainer->ListOfRecipes;
 	UE_LOG(LogTemp, Display, TEXT("All recipe Num: %i"), RecipeContainer->ListOfRecipes.Num())
+	IdleBrewer->ActivateSystem();
 }
 
 // Called every frame
@@ -56,6 +61,7 @@ void ACauldron::OnSphereTriggerOverlap(UPrimitiveComponent* OverlappedComponent,
 {
 	UE_LOG(LogTemp, Display, TEXT("Overlap"))
 	ARecipeItem* PossibleItem = Cast<ARecipeItem>(OtherActor);
+	AItem* MaybeItem = Cast<AItem>(OtherActor);
 	
 	if (OtherActor != nullptr && OtherActor->IsA(ACursedKingdomGameCharacter::StaticClass()))
 	{
@@ -66,24 +72,22 @@ void ACauldron::OnSphereTriggerOverlap(UPrimitiveComponent* OverlappedComponent,
 	
 		UE_LOG(LogTemp, Display, TEXT("Item Overlap"))
 		OnItemInsert();
-		PossibleItem->SetActorEnableCollision(false);
-		PossibleItem->SetActorHiddenInGame(true);
+		SpawnInsertSystem();
+		DeactivateItem(PossibleItem);
 		CheckItemForRecipe(PossibleItem);
 	}
-	else if(PossibleItem != nullptr && !CurrentlyBrewing)
+	else if(PossibleItem != nullptr && CurrentlyBrewing)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Still Brewing"))
-			//PossibleItem->Destroy();
-		PossibleItem->SetActorEnableCollision(false);
-		PossibleItem->SetActorHiddenInGame(true);
+		SpawnInsertSystem();
+		DeactivateItem(PossibleItem);
 		OnItemInsertWhileBrewing();
 	}
-	else if(OtherActor->IsA(AItem::StaticClass())&& !OtherActor->IsA(ARecipeItem::StaticClass()))
+	else if(MaybeItem!= nullptr)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Wrong Item KekW"))
-		OtherActor->SetActorEnableCollision(false);
-		OtherActor->SetActorHiddenInGame(true);
-		//PossibleItem->Destroy();
+		DeactivateItem(MaybeItem);
+		
 		OnWrongItemInsert();
 		Explode();
 	}
@@ -175,11 +179,13 @@ void ACauldron::DumpContents()
 
 void ACauldron::MakePotion()
 {
+	ProcessBrewer->ActivateSystem();
 	GetWorldTimerManager().SetTimer(TimerHandle,this,&ACauldron::SetPotionReady,PotionBrewingTime);
 }
 
 void ACauldron::SetPotionReady()
 {
+	ProcessBrewer->Deactivate();
 	CurrentlyBrewing = false;
 	UE_LOG(LogTemp, Display, TEXT("Success, brewed Potion"))
 	OnFinishedBrewing();
@@ -191,6 +197,19 @@ void ACauldron::UpgradeCauldron()
 	PotionBrewingTime /= 2.0f;
 	IsUpgraded = true;
 	OnUpgradeCauldron();
+}
+
+void ACauldron::DeactivateItem(AItem* Item)
+{
+	Item->Mesh->SetVisibility(false);
+	Item->SetActorEnableCollision(false);
+	Item->SetActorHiddenInGame(true);
+
+}
+
+void ACauldron::SpawnInsertSystem()
+{
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ItemInsertSystem, Mesh->GetComponentLocation()+FVector(0,0,65.0f));
 }
 
 
