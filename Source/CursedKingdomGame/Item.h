@@ -32,6 +32,8 @@ public:
 	bool isFocused = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mat, meta = (AllowPrivateAccess))
 	bool alreadyHighlighted;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mat, meta = (AllowPrivateAccess))
+	bool wasPickedUp;
 
 	void HighlightObject(bool Highlight);
 

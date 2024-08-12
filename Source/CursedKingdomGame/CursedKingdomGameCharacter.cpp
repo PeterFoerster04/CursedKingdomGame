@@ -681,6 +681,7 @@ void ACursedKingdomGameCharacter::TryToLoadSaveData()
 
 void ACursedKingdomGameCharacter::PickUpItem(AItem* Item)
 {
+	Item->wasPickedUp = true;
 	Item->OnItemPickUp();
 	Item->Mesh->SetSimulatePhysics(false);
 	Item->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
