@@ -33,4 +33,13 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
 	bool PlayerInRange = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Heal, meta = (AllowPrivateAccess))
+	bool WasHealed = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Heal, meta = (AllowPrivateAccess))
+	USkeletalMesh* VillagerHealedMesh;
+
+	UFUNCTION(BlueprintCallable)
+	void SwapToHealMesh();
 };

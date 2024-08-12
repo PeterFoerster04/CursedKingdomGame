@@ -7,6 +7,8 @@
 #include "NiagaraSystem.h"
 #include "Potion.generated.h"
 
+class UKingdomGameInstance;
+class AVillager;
 class UMaterialInterface;
 /**
  * 
@@ -21,5 +23,20 @@ public:
 	UNiagaraSystem* HealExplosionSystem;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Info, meta = (AllowPrivateAccess))
 	bool bUsed;
+
+
+	void BeginPlay() override;
+
+	UPROPERTY()
+	UKingdomGameInstance* Instance;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnPotionExplode();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnPotionGlasCollision();
+
+	UFUNCTION(BlueprintCallable)
+	bool HealVillager(AVillager* VillagerToHeal, EItemName NameOfPotion);
 
 };

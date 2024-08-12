@@ -39,3 +39,13 @@ void AVillager::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
+void AVillager::SwapToHealMesh()
+{
+	if (VillagerHealedMesh == nullptr)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Heal Mesh Null"));
+		return;
+	}
+	GetMesh()->SetSkeletalMesh(VillagerHealedMesh);
+}
+
