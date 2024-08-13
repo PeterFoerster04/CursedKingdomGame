@@ -674,7 +674,12 @@ void ACursedKingdomGameCharacter::TryToLoadSaveData()
 	{
 		UE_LOG(LogTemp, Display, TEXT("Game Instace Null"));
 	}
-	
+
+	if(Instance->SaveGameObject->HealedScarecrow)
+	{
+		UpgradeStaminaStats();
+	}
+
 	if (Instance->SaveGameObject->TutorialDone) CurrentTutoIndex = 0;
 	else CurrentTutoIndex = 1;
 }
@@ -692,12 +697,9 @@ void ACursedKingdomGameCharacter::PickUpItem(AItem* Item)
 
 }
 
-void ACursedKingdomGameCharacter::SetHasRifle(bool bNewHasRifle)
+void ACursedKingdomGameCharacter::UpgradeStaminaStats()
 {
-	bHasRifle = bNewHasRifle;
+	StaminaRechargeAmount = StaminaRechargeAmountUpgraded;
+	StaminaSubtractionAmount = StaminaSubtractionAmountUpgraded;
 }
 
-bool ACursedKingdomGameCharacter::GetHasRifle()
-{
-	return bHasRifle;
-}

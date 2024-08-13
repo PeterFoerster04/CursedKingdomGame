@@ -39,4 +39,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool HealVillager(AVillager* VillagerToHeal, EItemName NameOfPotion);
 
+
+	void TryToUpgradePlayerStats();
 };

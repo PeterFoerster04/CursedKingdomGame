@@ -3,6 +3,7 @@
 
 #include "Potion.h"
 
+#include "CursedKingdomGameCharacter.h"
 #include "KingdomGameInstance.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Villager.h"
@@ -49,8 +50,17 @@ bool APotion::HealVillager(AVillager* VillagerToHeal,EItemName NameOfPotion)
 	else if(NameOfPotion == EItemName::Vogelscheuchentrank)
 	{
 		Instance->SaveGameObject->HealedScarecrow = true;
+		TryToUpgradePlayerStats();
 	}
 
 	Instance->SaveSaves();
 	return true;
+}
+
+void APotion::TryToUpgradePlayerStats()
+{
+	if(Player != nullptr)
+	{
+		Player->UpgradeStaminaStats();
+	}
 }
