@@ -8,6 +8,7 @@
 #include "Logging/LogMacros.h"
 #include "CursedKingdomGameCharacter.generated.h"
 
+class ACauldron;
 class AItem;
 class UKingdomGameInstance;
 class UInventory;
@@ -191,6 +192,7 @@ public:
 
 	void HandlePOIMap(AItem* ItemToCheck, bool SetVisibility);
 	void HandleFogMooshroom(AItem* ItemToCheck, bool ActivateAbility);
+	void TryToUpgradeCauldron(ACauldron* Cauldron);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	USceneComponent* ItemStoreSpot;

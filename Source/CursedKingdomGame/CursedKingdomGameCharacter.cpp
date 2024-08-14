@@ -136,6 +136,19 @@ void ACursedKingdomGameCharacter::HandleFogMooshroom(AItem* ItemToCheck, bool Ac
 	
 }
 
+void ACursedKingdomGameCharacter::TryToUpgradeCauldron(ACauldron* Cauldron)
+{
+	Cauldron->UpgradeCauldron();
+	PlayerInventory->RemoveItemInHand();
+	ItemsInInventory--;
+	bPlayerInventoryFull = false;
+	NameOfCurrentItemInHand = EItemName::DEFAULT;
+	if(Instance!=nullptr)
+	{
+		Instance->SaveGameObject->UpgradedCauldron = true;
+	}
+}
+
 void ACursedKingdomGameCharacter::Die()
 {
 	
@@ -326,24 +339,14 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 	ACauldron* PossibleCauldron = Cast<ACauldron>(Hit.GetActor());
 	if(PossibleCauldron != nullptr&&!PossibleCauldron->IsUpgraded&& PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex] !=nullptr &&PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->Name == EItemName::GoldKit)
 	{
-		PossibleCauldron->UpgradeCauldron();
-		PlayerInventory->RemoveItemInHand();
-		ItemsInInventory--;
-		bPlayerInventoryFull = false;
-		NameOfCurrentItemInHand = EItemName::DEFAULT;
+		TryToUpgradeCauldron(PossibleCauldron);
+		
 	}
 
 	if (PossibleItem != nullptr && !PlayerInventory->CheckInventoryFull())
 	{
 		UE_LOG(LogTemp, Log, TEXT("Picked Up Actor: %s"), *PossibleItem->GetName());
 		PickUpItem(PossibleItem);
-		/*PossibleItem->OnItemPickUp();
-		PossibleItem->Mesh->SetSimulatePhysics(false);
-		PossibleItem->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-		PlayerInventory->AddItem(PossibleItem);
-		NameOfLastPickedItem = PossibleItem->Name;
-		bJustPickedUpItem = true;
-		ItemsInInventory++;*/
 	}
 	if(PlayerInventory->CheckInventoryFull())
 	{
