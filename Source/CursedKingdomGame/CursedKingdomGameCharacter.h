@@ -228,7 +228,8 @@ protected:
 	void Die();
 
 	void Resurrect();
-
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnThrowItemAnimEvent();
 
 	FTimerHandle DeathTimerHandle;
 

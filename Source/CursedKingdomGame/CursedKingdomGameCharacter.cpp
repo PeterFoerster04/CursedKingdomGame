@@ -442,6 +442,7 @@ void ACursedKingdomGameCharacter::ThrowItem(const FInputActionValue& Value)
 
 	if (PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
 	{
+		OnThrowItemAnimEvent();
 		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->OnItemThrow();
 		PlayerInventory->ActivateItem(true,FirstPersonCameraComponent->GetForwardVector(),ThrowForce);
 		ItemsInInventory--;
