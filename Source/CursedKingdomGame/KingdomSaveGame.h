@@ -28,6 +28,8 @@ public:
 	bool HealedSmith = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool HealedScarecrow = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool UpgradedCauldron = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<EItemName> SavedPlayerInventory;

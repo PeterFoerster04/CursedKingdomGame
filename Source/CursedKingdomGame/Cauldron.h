@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "Cauldron.generated.h"
 
+class UKingdomGameInstance;
 class AKeyItem;
 class UNiagaraComponent;
 class URecipe;
@@ -66,6 +67,10 @@ public:
 	bool IsUpgraded = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Brewing, meta = (AllowPrivateAccess))
 	TSubclassOf<AKeyItem> CurrentPotionInCauldron;
+
+
+	UPROPERTY()
+	UKingdomGameInstance* Instance;
 
 protected:
 	// Called when the game starts or when spawned

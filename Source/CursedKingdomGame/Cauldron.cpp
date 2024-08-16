@@ -15,6 +15,8 @@
 #include "NiagaraComponent.h"
 #include "Recipe.h"
 #include "KeyItem.h"
+#include "KingdomGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ACauldron::ACauldron()
@@ -48,6 +50,16 @@ void ACauldron::BeginPlay()
 	CurrentPossibleRecipes = RecipeContainer->ListOfRecipes;
 	UE_LOG(LogTemp, Display, TEXT("All recipe Num: %i"), RecipeContainer->ListOfRecipes.Num())
 	IdleBrewer->ActivateSystem();
+
+
+	Instance = Cast<UKingdomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(Instance != nullptr)
+	{
+		if(Instance->SaveGameObject->UpgradedCauldron)
+		{
+			UpgradeCauldron();
+		}
+	}
 }
 
 // Called every frame

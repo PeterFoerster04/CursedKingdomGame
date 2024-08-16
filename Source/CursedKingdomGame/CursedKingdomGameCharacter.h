@@ -8,6 +8,7 @@
 #include "Logging/LogMacros.h"
 #include "CursedKingdomGameCharacter.generated.h"
 
+class ACauldron;
 class AItem;
 class UKingdomGameInstance;
 class UInventory;
@@ -128,11 +129,14 @@ public:
 	float MaxStamina = 100.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess))
 	float CurrentStamina = 0.0f;
-	float StaminaSubtractionAmount = 10.0f;
-	float StaminaRechargeAmount = 5.0f;
+	float StaminaSubtractionAmount = 8.0f;
+	float StaminaRechargeAmount = 6.0f;
 
 	float StaminaCooldownTime = 5.0f;
 	float StaminaCurrentCooldownTime = 0.0f;
+
+	float StaminaSubtractionAmountUpgraded = 6.0f;
+	float StaminaRechargeAmountUpgraded = 12.0f;
 
 	bool bIsOnCooldown = false;
 	bool bTestBool = false;
@@ -180,18 +184,15 @@ public:
 
 	void PickUpItem(AItem* Item);
 
-	/** Setter to set the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	void SetHasRifle(bool bNewHasRifle);
+	UFUNCTION(BlueprintCallable)
+	void UpgradeStaminaStats();
 
-	/** Getter for the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	bool GetHasRifle();
 	UFUNCTION(BlueprintCallable)
 	void CheckJumpTuto();
 
 	void HandlePOIMap(AItem* ItemToCheck, bool SetVisibility);
 	void HandleFogMooshroom(AItem* ItemToCheck, bool ActivateAbility);
+	void TryToUpgradeCauldron(ACauldron* Cauldron);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	USceneComponent* ItemStoreSpot;
@@ -227,7 +228,8 @@ protected:
 	void Die();
 
 	void Resurrect();
-
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnThrowItemAnimEvent();
 
 	FTimerHandle DeathTimerHandle;
 

@@ -136,6 +136,19 @@ void ACursedKingdomGameCharacter::HandleFogMooshroom(AItem* ItemToCheck, bool Ac
 	
 }
 
+void ACursedKingdomGameCharacter::TryToUpgradeCauldron(ACauldron* Cauldron)
+{
+	Cauldron->UpgradeCauldron();
+	PlayerInventory->RemoveItemInHand();
+	ItemsInInventory--;
+	bPlayerInventoryFull = false;
+	NameOfCurrentItemInHand = EItemName::DEFAULT;
+	if(Instance!=nullptr)
+	{
+		Instance->SaveGameObject->UpgradedCauldron = true;
+	}
+}
+
 void ACursedKingdomGameCharacter::Die()
 {
 	
@@ -326,24 +339,14 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 	ACauldron* PossibleCauldron = Cast<ACauldron>(Hit.GetActor());
 	if(PossibleCauldron != nullptr&&!PossibleCauldron->IsUpgraded&& PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex] !=nullptr &&PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->Name == EItemName::GoldKit)
 	{
-		PossibleCauldron->UpgradeCauldron();
-		PlayerInventory->RemoveItemInHand();
-		ItemsInInventory--;
-		bPlayerInventoryFull = false;
-		NameOfCurrentItemInHand = EItemName::DEFAULT;
+		TryToUpgradeCauldron(PossibleCauldron);
+		
 	}
 
 	if (PossibleItem != nullptr && !PlayerInventory->CheckInventoryFull())
 	{
 		UE_LOG(LogTemp, Log, TEXT("Picked Up Actor: %s"), *PossibleItem->GetName());
 		PickUpItem(PossibleItem);
-		/*PossibleItem->OnItemPickUp();
-		PossibleItem->Mesh->SetSimulatePhysics(false);
-		PossibleItem->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-		PlayerInventory->AddItem(PossibleItem);
-		NameOfLastPickedItem = PossibleItem->Name;
-		bJustPickedUpItem = true;
-		ItemsInInventory++;*/
 	}
 	if(PlayerInventory->CheckInventoryFull())
 	{
@@ -368,6 +371,8 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 	//if scrolling gets out of range of (into negative or max inventory size) return
 	if ((scroll < 0 && PlayerInventory->CurrentItemOutIndex == 0) ||
 		(scroll > 0 && PlayerInventory->CurrentItemOutIndex == PlayerInventory->InventorySize - 1)) return;
+
+	OnItemSwap();
 
 	if (PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
 	{
@@ -437,6 +442,7 @@ void ACursedKingdomGameCharacter::ThrowItem(const FInputActionValue& Value)
 
 	if (PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
 	{
+		OnThrowItemAnimEvent();
 		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->OnItemThrow();
 		PlayerInventory->ActivateItem(true,FirstPersonCameraComponent->GetForwardVector(),ThrowForce);
 		ItemsInInventory--;
@@ -674,13 +680,19 @@ void ACursedKingdomGameCharacter::TryToLoadSaveData()
 	{
 		UE_LOG(LogTemp, Display, TEXT("Game Instace Null"));
 	}
-	
+
+	if(Instance->SaveGameObject->HealedScarecrow)
+	{
+		UpgradeStaminaStats();
+	}
+
 	if (Instance->SaveGameObject->TutorialDone) CurrentTutoIndex = 0;
 	else CurrentTutoIndex = 1;
 }
 
 void ACursedKingdomGameCharacter::PickUpItem(AItem* Item)
 {
+	Item->wasPickedUp = true;
 	Item->OnItemPickUp();
 	Item->Mesh->SetSimulatePhysics(false);
 	Item->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
@@ -691,12 +703,9 @@ void ACursedKingdomGameCharacter::PickUpItem(AItem* Item)
 
 }
 
-void ACursedKingdomGameCharacter::SetHasRifle(bool bNewHasRifle)
+void ACursedKingdomGameCharacter::UpgradeStaminaStats()
 {
-	bHasRifle = bNewHasRifle;
+	StaminaRechargeAmount = StaminaRechargeAmountUpgraded;
+	StaminaSubtractionAmount = StaminaSubtractionAmountUpgraded;
 }
 
-bool ACursedKingdomGameCharacter::GetHasRifle()
-{
-	return bHasRifle;
-}
