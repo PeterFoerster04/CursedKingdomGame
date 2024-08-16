@@ -372,6 +372,8 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 	if ((scroll < 0 && PlayerInventory->CurrentItemOutIndex == 0) ||
 		(scroll > 0 && PlayerInventory->CurrentItemOutIndex == PlayerInventory->InventorySize - 1)) return;
 
+	OnItemSwap();
+
 	if (PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
 	{
 		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->
