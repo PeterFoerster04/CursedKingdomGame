@@ -6,6 +6,7 @@
 #include <d3d12sdklayers.h>
 
 #include "CursedKingdomGameCharacter.h"
+#include "Inventory.h"
 #include "Item.h"
 #include "RecipeItem.h"
 #include "RecipeList.h"
@@ -13,7 +14,9 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Recipe.h"
-
+#include "KeyItem.h"
+#include "KingdomGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ACauldron::ACauldron()
@@ -31,7 +34,11 @@ ACauldron::ACauldron()
 	PotionSoupMesh->SetupAttachment(RootComponent);
 
 	RecipeContainer = CreateDefaultSubobject<URecipeList>("RecipeContainer");
+	IdleBrewer = CreateDefaultSubobject<UNiagaraComponent>("Brewer");
+	IdleBrewer->SetupAttachment(RootComponent);
 
+	ProcessBrewer = CreateDefaultSubobject<UNiagaraComponent>("ProcessBrewer");
+	ProcessBrewer->SetupAttachment(RootComponent);
 	
 }
 
@@ -42,6 +49,17 @@ void ACauldron::BeginPlay()
 	ItemTrigger->OnComponentBeginOverlap.AddDynamic(this, &ACauldron::OnSphereTriggerOverlap);
 	CurrentPossibleRecipes = RecipeContainer->ListOfRecipes;
 	UE_LOG(LogTemp, Display, TEXT("All recipe Num: %i"), RecipeContainer->ListOfRecipes.Num())
+	IdleBrewer->ActivateSystem();
+
+
+	Instance = Cast<UKingdomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(Instance != nullptr)
+	{
+		if(Instance->SaveGameObject->UpgradedCauldron)
+		{
+			UpgradeCauldron();
+		}
+	}
 }
 
 // Called every frame
@@ -56,6 +74,7 @@ void ACauldron::OnSphereTriggerOverlap(UPrimitiveComponent* OverlappedComponent,
 {
 	UE_LOG(LogTemp, Display, TEXT("Overlap"))
 	ARecipeItem* PossibleItem = Cast<ARecipeItem>(OtherActor);
+	AItem* MaybeItem = Cast<AItem>(OtherActor);
 	
 	if (OtherActor != nullptr && OtherActor->IsA(ACursedKingdomGameCharacter::StaticClass()))
 	{
@@ -63,27 +82,27 @@ void ACauldron::OnSphereTriggerOverlap(UPrimitiveComponent* OverlappedComponent,
 	}
 	else if (PossibleItem !=nullptr&&!CurrentlyBrewing)
 	{
-	
+		PotionReady = false;
 		UE_LOG(LogTemp, Display, TEXT("Item Overlap"))
 		OnItemInsert();
-		PossibleItem->SetActorEnableCollision(false);
-		PossibleItem->SetActorHiddenInGame(true);
+		SpawnInsertSystem();
+		DeactivateItem(PossibleItem);
 		CheckItemForRecipe(PossibleItem);
 	}
-	else if(PossibleItem != nullptr && !CurrentlyBrewing)
+	else if(PossibleItem != nullptr && CurrentlyBrewing)
 	{
+		
 		UE_LOG(LogTemp, Display, TEXT("Still Brewing"))
-			//PossibleItem->Destroy();
-		PossibleItem->SetActorEnableCollision(false);
-		PossibleItem->SetActorHiddenInGame(true);
+		SpawnInsertSystem();
+		DeactivateItem(PossibleItem);
 		OnItemInsertWhileBrewing();
 	}
-	else if(OtherActor->IsA(AItem::StaticClass())&& !OtherActor->IsA(ARecipeItem::StaticClass()))
+	else if(MaybeItem!= nullptr)
 	{
+		PotionReady = false;
 		UE_LOG(LogTemp, Display, TEXT("Wrong Item KekW"))
-		OtherActor->SetActorEnableCollision(false);
-		OtherActor->SetActorHiddenInGame(true);
-		//PossibleItem->Destroy();
+		DeactivateItem(MaybeItem);
+		
 		OnWrongItemInsert();
 		Explode();
 	}
@@ -146,9 +165,11 @@ void ACauldron::CheckItemForRecipe(ARecipeItem* Item)
 	}
 	else if(CurrentPossibleRecipes.Num() == 1&& CurrentPossibleRecipes[0]->Ingredients.Num() == CurrentItemsInCauldron.Num())
 	{
-
+		
 		UE_LOG(LogTemp, Display, TEXT("Brewing Potion"))
 		CurrentlyBrewing = true;
+		CurrentPotionInCauldron = CurrentPossibleRecipes[0]->ResultingPotion;
+		//DetermineCurrentPotion();
 		OnStartBrewing();
 		MakePotion();
 		DumpContents();
@@ -175,12 +196,15 @@ void ACauldron::DumpContents()
 
 void ACauldron::MakePotion()
 {
+	ProcessBrewer->ActivateSystem();
 	GetWorldTimerManager().SetTimer(TimerHandle,this,&ACauldron::SetPotionReady,PotionBrewingTime);
 }
 
 void ACauldron::SetPotionReady()
 {
+	ProcessBrewer->Deactivate();
 	CurrentlyBrewing = false;
+	PotionReady = true;
 	UE_LOG(LogTemp, Display, TEXT("Success, brewed Potion"))
 	OnFinishedBrewing();
 }
@@ -191,6 +215,59 @@ void ACauldron::UpgradeCauldron()
 	PotionBrewingTime /= 2.0f;
 	IsUpgraded = true;
 	OnUpgradeCauldron();
+}
+
+void ACauldron::DeactivateItem(AItem* Item)
+{
+	PotionReady = false;
+	Item->Mesh->SetVisibility(false);
+	Item->SetActorEnableCollision(false);
+	Item->SetActorHiddenInGame(true);
+
+}
+
+void ACauldron::SpawnInsertSystem()
+{
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ItemInsertSystem, Mesh->GetComponentLocation()+FVector(0,0,65.0f));
+}
+
+void ACauldron::DetermineCurrentPotion()
+{
+
+
+	
+
+}
+
+void ACauldron::SwapGlasForPotion(int CurrentOutIndex, ACursedKingdomGameCharacter* Player)
+{
+	
+	if(Player == nullptr||Player->PlayerInventory->ItemBundle[CurrentOutIndex]==nullptr)
+	{
+		return;
+	}
+	AItem* ThrowAwayItem = Player->PlayerInventory->ItemBundle[CurrentOutIndex];
+
+	Player->PlayerInventory->ActivateItemHidden();
+	Player->ItemsInInventory--;
+	Player->bPlayerInventoryFull = false;
+	Player->NameOfCurrentItemInHand = EItemName::DEFAULT;
+
+	if(CurrentPotionInCauldron == nullptr) return;
+
+	OnTakeOutPotion();
+	
+	FActorSpawnParameters Parameters;
+	AKeyItem* ItemActor = GetWorld()->SpawnActor<AKeyItem>(CurrentPotionInCauldron,Player->GetMesh()->GetComponentLocation(),FRotator(), Parameters);
+
+
+	if(ItemActor != nullptr)
+	{
+		Player->PickUpItem(ItemActor);
+	}
+	
+	
+
 }
 
 

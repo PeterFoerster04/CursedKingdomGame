@@ -126,16 +126,40 @@ void ACursedKingdomGameCharacter::HandlePOIMap(AItem* ItemToCheck , bool SetVisi
 	bHasMapInHand = SetVisibility;
 }
 
+void ACursedKingdomGameCharacter::HandleFogMooshroom(AItem* ItemToCheck, bool ActivateAbility)
+{
+	if (ItemToCheck->Name != EItemName::NebelPilz) return;
+
+	
+	ItemToCheck->SetActorEnableCollision(ActivateAbility);
+	
+	
+}
+
+void ACursedKingdomGameCharacter::TryToUpgradeCauldron(ACauldron* Cauldron)
+{
+	Cauldron->UpgradeCauldron();
+	PlayerInventory->RemoveItemInHand();
+	ItemsInInventory--;
+	bPlayerInventoryFull = false;
+	NameOfCurrentItemInHand = EItemName::DEFAULT;
+	if(Instance!=nullptr)
+	{
+		Instance->SaveGameObject->UpgradedCauldron = true;
+	}
+}
+
 void ACursedKingdomGameCharacter::Die()
 {
 	
 	PlayerDied = true;
+	OnPlayerDied();
 	UGameplayStatics::GetPlayerCameraManager(CurrentWorld, 0)->StartCameraFade(0.0f, 1.0f, 1.5f, FLinearColor::Black, true,true);
 	
 	FInputModeUIOnly input;
 	UGameplayStatics::GetPlayerController(CurrentWorld, 0)->SetInputMode(input);
 	UGameplayStatics::GetPlayerController(CurrentWorld, 0)->PlayerInput->FlushPressedKeys();
-	GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &ACursedKingdomGameCharacter::Resurrect, 3.0f);
+	GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &ACursedKingdomGameCharacter::Resurrect, 5.0f);
 	
 	CurrentHealth = MaxHealth;
 	CurrentStamina = MaxStamina;
@@ -281,9 +305,16 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 		CurrentTutoIndex++;
 		TutoBlocked = true;
 	}
-	
+	//only used for blueprints, also reset when used
+	bPressedInteract = true;
 	//UE_LOG(LogTemp,Display,TEXT("Interact press"))
-
+	UE_LOG(LogTemp,Display,TEXT("Interact Press:%i"),Value.Get<bool>())
+	//do not perform interaction when letting key go
+	if(Value.Get<bool>() == false)
+	{
+		bPressedInteract = false;
+		return;
+	}
 	FHitResult Hit;
 	FVector TraceStart = FirstPersonCameraComponent->GetComponentLocation();
 	FVector TraceEnd = FirstPersonCameraComponent->GetComponentLocation() + FirstPersonCameraComponent->GetForwardVector() * MaxInteractRange;
@@ -306,25 +337,16 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 	}
 	AItem* PossibleItem = Cast<AItem>(Hit.GetActor());
 	ACauldron* PossibleCauldron = Cast<ACauldron>(Hit.GetActor());
-	if(PossibleCauldron != nullptr&&!PossibleCauldron->IsUpgraded&&PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->Name == EItemName::GoldKit)
+	if(PossibleCauldron != nullptr&&!PossibleCauldron->IsUpgraded&& PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex] !=nullptr &&PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->Name == EItemName::GoldKit)
 	{
-		PossibleCauldron->UpgradeCauldron();
-		PlayerInventory->RemoveItemInHand();
-		ItemsInInventory--;
-		bPlayerInventoryFull = false;
-		NameOfCurrentItemInHand = EItemName::DEFAULT;
+		TryToUpgradeCauldron(PossibleCauldron);
+		
 	}
 
 	if (PossibleItem != nullptr && !PlayerInventory->CheckInventoryFull())
 	{
 		UE_LOG(LogTemp, Log, TEXT("Picked Up Actor: %s"), *PossibleItem->GetName());
-		PossibleItem->OnItemPickUp();
-		PossibleItem->Mesh->SetSimulatePhysics(false);
-		PossibleItem->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-		PlayerInventory->AddItem(PossibleItem);
-		NameOfLastPickedItem = PossibleItem->Name;
-		bJustPickedUpItem = true;
-		ItemsInInventory++;
+		PickUpItem(PossibleItem);
 	}
 	if(PlayerInventory->CheckInventoryFull())
 	{
@@ -350,12 +372,15 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 	if ((scroll < 0 && PlayerInventory->CurrentItemOutIndex == 0) ||
 		(scroll > 0 && PlayerInventory->CurrentItemOutIndex == PlayerInventory->InventorySize - 1)) return;
 
+	OnItemSwap();
+
 	if (PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
 	{
 		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->
 		AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
 		HandlePOIMap(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex],false);
+		HandleFogMooshroom(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex], false);
 		PlayerInventory->MoveItem();
 	}
 	
@@ -369,6 +394,7 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 			AttachToComponent(ItemHoldSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
 		HandlePOIMap(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex], true);
+		HandleFogMooshroom(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex], true);
 		PlayerInventory->MoveItem(false);
 		NameOfCurrentItemInHand = PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->Name;
 	}
@@ -416,6 +442,7 @@ void ACursedKingdomGameCharacter::ThrowItem(const FInputActionValue& Value)
 
 	if (PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
 	{
+		OnThrowItemAnimEvent();
 		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->OnItemThrow();
 		PlayerInventory->ActivateItem(true,FirstPersonCameraComponent->GetForwardVector(),ThrowForce);
 		ItemsInInventory--;
@@ -646,24 +673,39 @@ void ACursedKingdomGameCharacter::TryToLoadSaveData()
 		else if (CurrentWorld->GetName() == "FirstPersonMap"&&Instance->SaveGameObject->NotFirstSpawn) {
 			SetActorLocationAndRotation(Instance->SaveGameObject->SpawnPosition.GetLocation(), Instance->SaveGameObject->SpawnPosition.GetRotation());
 		}
-		MouseSens = Instance->SaveGameObject->MouseSens;
+		MouseSens = Instance->SettingsSaveGameObject->MouseSens;
 		LoadInventory();
 	}
 	else
 	{
 		UE_LOG(LogTemp, Display, TEXT("Game Instace Null"));
 	}
-	
+
+	if(Instance->SaveGameObject->HealedScarecrow)
+	{
+		UpgradeStaminaStats();
+	}
+
 	if (Instance->SaveGameObject->TutorialDone) CurrentTutoIndex = 0;
 	else CurrentTutoIndex = 1;
 }
 
-void ACursedKingdomGameCharacter::SetHasRifle(bool bNewHasRifle)
+void ACursedKingdomGameCharacter::PickUpItem(AItem* Item)
 {
-	bHasRifle = bNewHasRifle;
+	Item->wasPickedUp = true;
+	Item->OnItemPickUp();
+	Item->Mesh->SetSimulatePhysics(false);
+	Item->AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	PlayerInventory->AddItem(Item);
+	NameOfLastPickedItem = Item->Name;
+	bJustPickedUpItem = true;
+	ItemsInInventory++;
+
 }
 
-bool ACursedKingdomGameCharacter::GetHasRifle()
+void ACursedKingdomGameCharacter::UpgradeStaminaStats()
 {
-	return bHasRifle;
+	StaminaRechargeAmount = StaminaRechargeAmountUpgraded;
+	StaminaSubtractionAmount = StaminaSubtractionAmountUpgraded;
 }
+

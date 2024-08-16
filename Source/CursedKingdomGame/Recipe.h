@@ -19,6 +19,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Contents, meta = (AllowPrivateAccess))
 	TArray<EItemName> Ingredients;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Contents, meta = (AllowPrivateAccess))
-	TSubclassOf<ARecipeItem> ResultItem;
+	TSubclassOf<AKeyItem> ResultingPotion;
 	
 };

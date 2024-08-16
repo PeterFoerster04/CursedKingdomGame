@@ -70,6 +70,13 @@ void UInventory::ActivateItem(bool a_bUseForce, FVector a_ThrowDirection, float 
 
 }
 
+void UInventory::ActivateItemHidden()
+{
+	ItemBundle[CurrentItemOutIndex]->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	ItemBundle[CurrentItemOutIndex]->Destroy();
+	ItemBundle[CurrentItemOutIndex] = nullptr;
+}
+
 void UInventory::MoveItem(bool a_ToBack)
 {
 	ItemBundle[CurrentItemOutIndex]->SetActorHiddenInGame(a_ToBack);
