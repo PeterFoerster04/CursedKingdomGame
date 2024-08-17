@@ -372,7 +372,7 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 	if ((scroll < 0 && PlayerInventory->CurrentItemOutIndex == 0) ||
 		(scroll > 0 && PlayerInventory->CurrentItemOutIndex == PlayerInventory->InventorySize - 1)) return;
 
-	OnItemSwap();
+	
 
 	if (PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
 	{
@@ -403,7 +403,7 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 		NameOfCurrentItemInHand = EItemName::DEFAULT;
 	}
 	UE_LOG(LogTemp, Display, TEXT("%i"), PlayerInventory->CurrentItemOutIndex)
-	
+		OnItemSwap();
 	
 }
 
