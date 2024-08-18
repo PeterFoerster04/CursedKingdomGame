@@ -26,8 +26,7 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 ACursedKingdomGameCharacter::ACursedKingdomGameCharacter()
 {
-	// Character doesnt have a rifle at start
-	bHasRifle = false;
+
 	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
@@ -52,7 +51,7 @@ ACursedKingdomGameCharacter::ACursedKingdomGameCharacter()
 	{
 		UE_LOG(LogTemp,Display,TEXT("Failed to get world"))
 	}
-
+	//component attaching
 	ItemStoreSpot = CreateDefaultSubobject<USceneComponent>("ItemStoreSpot");
 	ItemStoreSpot->SetupAttachment(RootComponent);
 	ItemHoldSpot = CreateDefaultSubobject<USceneComponent>("ItemHoldSpot");
@@ -67,6 +66,7 @@ void ACursedKingdomGameCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+	//setting default values
 	CurrentHealth = MaxHealth;
 	MaxSprintMovementSpeed = MaxMovementSpeedDefault * SprintMultiplier;
 	CurrentStamina = MaxStamina;
@@ -85,8 +85,6 @@ void ACursedKingdomGameCharacter::BeginPlay()
 	//UE_LOG(LogTemp,Display,TEXT("%f"),FirstPersonCameraComponent->FieldOfView)
 	FirstPersonCameraComponent->FieldOfView = WalkFOV;
 	TryToLoadSaveData();
-	
-
 	CameraStartLoc = FirstPersonCameraComponent->GetRelativeLocation();
 }
 
@@ -98,16 +96,15 @@ void ACursedKingdomGameCharacter::Tick(float DeltaSeconds)
 	ManageStamina(DeltaSeconds);
 	ManageHealth(DeltaSeconds);
 	ManagePostProcessEffects(DeltaSeconds);
-	//UE_LOG(LogTemp, Display, TEXT("Health:%f"), CurrentHealth);
 	CheckForItemInFront();
 	ManageViewBobbing(DeltaSeconds);
 }
 
-//////////////////////////////////////////////////////////////////////////// Input
 
+//incements tutorial sequence if jump was pressed
 void ACursedKingdomGameCharacter::CheckJumpTuto()
 {
-
+	//jump callback function is in character class (not editable), therefore this is just called in blueprint when jump is pressed
 	if (!Instance->SaveGameObject->TutorialDone && CurrentTutoIndex == 2&&!TutoBlocked)
 	{
 		CurrentTutoIndex++;
@@ -115,6 +112,8 @@ void ACursedKingdomGameCharacter::CheckJumpTuto()
 	}
 }
 
+//toggles icon visibility if player swaps map around in inventory
+//map out -> points of interest visible
 void ACursedKingdomGameCharacter::HandlePOIMap(AItem* ItemToCheck , bool SetVisibility)
 {
 	if (ItemToCheck->Name != EItemName::Karte) return;
@@ -126,16 +125,15 @@ void ACursedKingdomGameCharacter::HandlePOIMap(AItem* ItemToCheck , bool SetVisi
 	bHasMapInHand = SetVisibility;
 }
 
+//toggles mushroom collision, this is needed because the ability uses triggers
+//yes, wrote mooshroom accidentally 
 void ACursedKingdomGameCharacter::HandleFogMooshroom(AItem* ItemToCheck, bool ActivateAbility)
 {
 	if (ItemToCheck->Name != EItemName::NebelPilz) return;
-
-	
 	ItemToCheck->SetActorEnableCollision(ActivateAbility);
-	
-	
-}
 
+}
+//calles when player interacts with cauldron while holding upgrade kit
 void ACursedKingdomGameCharacter::TryToUpgradeCauldron(ACauldron* Cauldron)
 {
 	Cauldron->UpgradeCauldron();
@@ -149,9 +147,9 @@ void ACursedKingdomGameCharacter::TryToUpgradeCauldron(ACauldron* Cauldron)
 	}
 }
 
+//player dies, then is resurrected after delay
 void ACursedKingdomGameCharacter::Die()
 {
-	
 	PlayerDied = true;
 	OnPlayerDied();
 	UGameplayStatics::GetPlayerCameraManager(CurrentWorld, 0)->StartCameraFade(0.0f, 1.0f, 1.5f, FLinearColor::Black, true,true);
@@ -160,11 +158,12 @@ void ACursedKingdomGameCharacter::Die()
 	UGameplayStatics::GetPlayerController(CurrentWorld, 0)->SetInputMode(input);
 	UGameplayStatics::GetPlayerController(CurrentWorld, 0)->PlayerInput->FlushPressedKeys();
 	GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &ACursedKingdomGameCharacter::Resurrect, 5.0f);
-	
+
 	CurrentHealth = MaxHealth;
 	CurrentStamina = MaxStamina;
 }
 
+//spawn point is determined by the position and level the player died in
 void ACursedKingdomGameCharacter::Resurrect()
 {
 	//if player died in different map, going back to main map
@@ -187,20 +186,17 @@ void ACursedKingdomGameCharacter::Resurrect()
 	FInputModeGameOnly input;
 	UGameplayStatics::GetPlayerController(CurrentWorld, 0)->SetInputMode(input);
 }
-
+//input setup
 void ACursedKingdomGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-	
-		// Moving
+
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::Move);
 
-		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::Look);
 
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::Sprint);
@@ -212,8 +208,6 @@ void ACursedKingdomGameCharacter::SetupPlayerInputComponent(UInputComponent* Pla
 		EnhancedInputComponent->BindAction(ItemDropAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::DropItem);
 
 		EnhancedInputComponent->BindAction(ItemThrowAction, ETriggerEvent::Triggered, this, &ACursedKingdomGameCharacter::ThrowItem);
-
-		
 	}
 	else
 	{
@@ -226,7 +220,7 @@ void ACursedKingdomGameCharacter::SetupPlayerInputComponent(UInputComponent* Pla
 void ACursedKingdomGameCharacter::Move(const FInputActionValue& Value)
 {
 
-
+	//tutorial index is only incremented if all WASD keys were pressed
 	// input is a Vector2D
 	MovementVector = Value.Get<FVector2D>();
 	if(!Instance->SaveGameObject->TutorialDone &&CurrentTutoIndex ==1&& !TutoBlocked)
@@ -244,6 +238,7 @@ void ACursedKingdomGameCharacter::Move(const FInputActionValue& Value)
 		}
 
 	}
+	
 
 	if (Controller != nullptr)
 	{
@@ -278,7 +273,7 @@ void ACursedKingdomGameCharacter::Look(const FInputActionValue& Value)
 
 void ACursedKingdomGameCharacter::Sprint(const FInputActionValue& Value)
 {
-
+	//tutorial index incrementation
 	if (!Instance->SaveGameObject->TutorialDone && CurrentTutoIndex == 3 && !TutoBlocked)
 	{
 		CurrentTutoIndex++;
@@ -298,6 +293,9 @@ void ACursedKingdomGameCharacter::Sprint(const FInputActionValue& Value)
 	//UE_LOG(LogTemp,Display,TEXT("%i"), bIsSprinting)
 }
 
+//line trace to check actor in front of player
+//actor is item -> able to oick up if inventory is not full
+//actor is cauldron and upgrade kit in hand -> upgrade cauldron
 void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 {
 	if (!Instance->SaveGameObject->TutorialDone && CurrentTutoIndex == 4 && !TutoBlocked)
@@ -340,9 +338,7 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 	if(PossibleCauldron != nullptr&&!PossibleCauldron->IsUpgraded&& PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex] !=nullptr &&PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->Name == EItemName::GoldKit)
 	{
 		TryToUpgradeCauldron(PossibleCauldron);
-		
 	}
-
 	if (PossibleItem != nullptr && !PlayerInventory->CheckInventoryFull())
 	{
 		UE_LOG(LogTemp, Log, TEXT("Picked Up Actor: %s"), *PossibleItem->GetName());
@@ -359,6 +355,15 @@ void ACursedKingdomGameCharacter::Interact(const FInputActionValue& Value)
 
 //sadly attaching actors with physics via code without complications can only be achieved by attaching in this script
 //thats why the move item function seems kind of useless now
+
+//usually this the functionality for storing new items should be handled completely by the inventory component
+//but due to the attachment issues this must be done in the player character
+//thats also why the currentOutindex ist used
+//the player character class has to access everything from outside sadly
+//this affects all inventory based functions, for example: drop item or swap item
+
+
+//function basically attaches (activates) and detaches (deactivates) items from player in the bounds of the inventory
 void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 {
 	if (!Instance->SaveGameObject->TutorialDone && CurrentTutoIndex == 5 && !TutoBlocked)
@@ -372,13 +377,11 @@ void ACursedKingdomGameCharacter::SwapItem(const FInputActionValue& Value)
 	if ((scroll < 0 && PlayerInventory->CurrentItemOutIndex == 0) ||
 		(scroll > 0 && PlayerInventory->CurrentItemOutIndex == PlayerInventory->InventorySize - 1)) return;
 
-	
-
 	if (PlayerInventory->DoesInvHaveItemAtIndex(PlayerInventory->CurrentItemOutIndex))
 	{
 		PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex]->
 		AttachToComponent(ItemStoreSpot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-
+		//cover special cases
 		HandlePOIMap(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex],false);
 		HandleFogMooshroom(PlayerInventory->ItemBundle[PlayerInventory->CurrentItemOutIndex], false);
 		PlayerInventory->MoveItem();
@@ -455,8 +458,7 @@ void ACursedKingdomGameCharacter::ThrowItem(const FInputActionValue& Value)
 
 void ACursedKingdomGameCharacter::ChangeFOV(float a_Delta)
 {
-	
-
+	//smooth fov change :)
 	if (bIsSprinting&&MovementVector.Length() > 0)
 	{
 		FirstPersonCameraComponent->FieldOfView = FMath::Lerp(FirstPersonCameraComponent->FieldOfView, SprintFOV, FOVTransitionSpeed*a_Delta);
@@ -469,7 +471,8 @@ void ACursedKingdomGameCharacter::ChangeFOV(float a_Delta)
 
 void ACursedKingdomGameCharacter::ManageStamina(float a_Delta)
 {
-
+	//sprint drains stamina
+	//stamina is recharged while not sprinting and if stamina was not used completely
 	if(bIsSprinting&&!bIsOnCooldown)
 	{
 		CurrentStamina -= a_Delta * StaminaSubtractionAmount;
@@ -479,6 +482,8 @@ void ACursedKingdomGameCharacter::ManageStamina(float a_Delta)
 		CurrentStamina += a_Delta * StaminaRechargeAmount;
 		if (CurrentStamina > MaxStamina) CurrentStamina = MaxStamina;
 	}
+
+	//reset sprinting if stamina bar is empty
 	if(CurrentStamina <=0&&!bIsOnCooldown)
 	{
 		CurrentStamina = 0;
@@ -486,21 +491,22 @@ void ACursedKingdomGameCharacter::ManageStamina(float a_Delta)
 		bIsSprinting = false;
 		GetCharacterMovement()->MaxWalkSpeed = MaxMovementSpeedDefault;
 	}
+	//count down stamina cooldown
 	if(bIsOnCooldown)
 	{
 		StaminaCurrentCooldownTime -= a_Delta;
 	}
+	//when countdown is over, regenerate stamina again
 	if(StaminaCurrentCooldownTime <=0)
 	{
 		StaminaCurrentCooldownTime = StaminaCooldownTime;
 		bIsOnCooldown = false;
 	}
-
-	
 }
 
 void ACursedKingdomGameCharacter::ManageHealth(float a_Delta)
 {
+	//always regenerate health if low
 	if(CurrentHealth < MaxHealth)
 	{
 		CurrentHealth += HealthReGenPerSec * a_Delta;
@@ -513,6 +519,7 @@ void ACursedKingdomGameCharacter::ManageHealth(float a_Delta)
 
 void ACursedKingdomGameCharacter::TakePlayerDamage(float a_Damage)
 {
+	//to much damage causes the player to die
 	if(CurrentHealth> a_Damage)
 	{
 		CurrentHealth -= a_Damage;
@@ -521,15 +528,16 @@ void ACursedKingdomGameCharacter::TakePlayerDamage(float a_Damage)
 	{
 		CurrentHealth = 0;
 		if(!PlayerDied)Die();
-		
 	}
 }
 
 void ACursedKingdomGameCharacter::ManagePostProcessEffects(float a_Delta)
 {
+	//effects are smoothly removed, being connected to the current health of the player
 	if(CurrentHealth <MaxHealth)
 	{
-
+		//starting from 0% to when player is full
+		//effects are maximized when player dies
 		float newVigIntensity = 1.0f - (CurrentHealth / MaxHealth);
 		float newFringeIntensity = (1.0f - (CurrentHealth / MaxHealth))*3.0f;
 		newVigIntensity = FMath::Clamp(newVigIntensity, 0.0f, 1.0f);
@@ -545,12 +553,15 @@ void ACursedKingdomGameCharacter::ManagePostProcessEffects(float a_Delta)
 		FirstPersonCameraComponent->PostProcessSettings.VignetteIntensity = 0.0f;
 		FirstPersonCameraComponent->PostProcessSettings.SceneFringeIntensity = 0.0f;
 	}
-
-
 }
 
+//used to apply outline effect to itmes that are focused by player
+//the item applies the outline effect on itself if hit
+//outlines are reset if player is focusing something that is not an item
+//marking multiple items is possible if there is no gap between them
 void ACursedKingdomGameCharacter::CheckForItemInFront()
 {
+
 	FHitResult Hit;
 	FVector TraceStart = FirstPersonCameraComponent->GetComponentLocation();
 	FVector TraceEnd = FirstPersonCameraComponent->GetComponentLocation() + FirstPersonCameraComponent->GetForwardVector() * MaxInteractRange;
@@ -558,9 +569,7 @@ void ACursedKingdomGameCharacter::CheckForItemInFront()
 	//ignore own actor
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(this);
-
 	CurrentWorld->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Pawn, QueryParams);
-	//DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 10.0f);
 
 	if (Hit.bBlockingHit && Hit.GetActor() != nullptr)
 	{
@@ -584,13 +593,7 @@ void ACursedKingdomGameCharacter::CheckForItemInFront()
 
 void ACursedKingdomGameCharacter::ManageViewBobbing(float a_Delta)
 {
-
-	//Brauch eh kein Mensch
-	/*FVector BobPos;
-	BobPos.Z += FMath::Lerp(BobPos.Z, FMath::Sin(1.0f * a_Delta) * 100.0f, 20.0f*a_Delta);
-	FirstPersonCameraComponent->SetRelativeLocation(CameraStartLoc+BobPos);*/
-	
-
+	//made people sick
 }
 
 void ACursedKingdomGameCharacter::SaveInventory()
@@ -654,7 +657,9 @@ void ACursedKingdomGameCharacter::LoadInventory()
 	if (PlayerInventory->CheckInventoryFull()) bPlayerInventoryFull = true;
 	
 }
-
+//function attempts to load last position saved and inventory
+//called at beginning, also sets th game instance reference
+//called when traveling between levels
 void ACursedKingdomGameCharacter::TryToLoadSaveData()
 {
 	Instance = Cast<UKingdomGameInstance>(UGameplayStatics::GetGameInstance(CurrentWorld));
@@ -662,14 +667,17 @@ void ACursedKingdomGameCharacter::TryToLoadSaveData()
 	{
 		if (Instance->CameFromForge)
 		{
+			//spawning player in front of forge if player came from it (level traveling)
 			SetActorLocation(Instance->ForgeRespawnPosition);
 			Instance->CameFromForge = false;
 		}
 		else if (Instance->CameFromCave)
 		{
+			//spawning player in front of cave if player came from it (level traveling)
 			SetActorLocation(Instance->MineRespawnPosition);
 			Instance->CameFromCave = false;
 		}
+		//just teleporting player to last saved position if player logs in
 		else if (CurrentWorld->GetName() == "FirstPersonMap"&&Instance->SaveGameObject->NotFirstSpawn) {
 			SetActorLocationAndRotation(Instance->SaveGameObject->SpawnPosition.GetLocation(), Instance->SaveGameObject->SpawnPosition.GetRotation());
 		}
@@ -680,7 +688,7 @@ void ACursedKingdomGameCharacter::TryToLoadSaveData()
 	{
 		UE_LOG(LogTemp, Display, TEXT("Game Instace Null"));
 	}
-
+	//check if scarecrows gift was obtained (running shoes)
 	if(Instance->SaveGameObject->HealedScarecrow)
 	{
 		UpgradeStaminaStats();

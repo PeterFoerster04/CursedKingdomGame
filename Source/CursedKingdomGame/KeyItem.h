@@ -9,6 +9,8 @@
 /**
  * 
  */
+
+//class to differentiate between normal items and items that are not recipe items but special in some way
 UCLASS()
 class CURSEDKINGDOMGAME_API AKeyItem : public AItem
 {

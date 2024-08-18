@@ -9,7 +9,7 @@
 
 
 class ACursedKingdomGameCharacter;
-
+//base class for items that can be picked up
 UCLASS()
 class CURSEDKINGDOMGAME_API AItem : public AActor
 {
@@ -28,6 +28,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mat, meta = (AllowPrivateAccess))
 	UMaterialInterface* OutlineMat;
 
+	//used to toggle outline material
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mat, meta = (AllowPrivateAccess))
 	bool isFocused = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mat, meta = (AllowPrivateAccess))
@@ -50,7 +51,7 @@ public:
 
 
 
-
+	//audio events
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnItemThrow();
 	UFUNCTION(BlueprintImplementableEvent)

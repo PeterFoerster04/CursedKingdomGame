@@ -6,6 +6,8 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+
+
 // Sets default values
 AVillager::AVillager()
 {
