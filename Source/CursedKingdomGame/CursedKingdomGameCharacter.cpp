@@ -123,6 +123,12 @@ void ACursedKingdomGameCharacter::HandlePOIMap(AItem* ItemToCheck , bool SetVisi
 		Map->TogglePOIVisibility(SetVisibility);
 	}
 	bHasMapInHand = SetVisibility;
+	//map is rotated wrong so set manually
+	if(SetVisibility)
+	{
+		UE_LOG(LogTemp, Display, TEXT("RotateMap"));
+		ItemToCheck->SetActorRelativeRotation(FRotator(40, 70, 0));
+	}
 }
 
 //toggles mushroom collision, this is needed because the ability uses triggers
@@ -131,7 +137,6 @@ void ACursedKingdomGameCharacter::HandleFogMooshroom(AItem* ItemToCheck, bool Ac
 {
 	if (ItemToCheck->Name != EItemName::NebelPilz) return;
 	ItemToCheck->SetActorEnableCollision(ActivateAbility);
-
 }
 //calles when player interacts with cauldron while holding upgrade kit
 void ACursedKingdomGameCharacter::TryToUpgradeCauldron(ACauldron* Cauldron)
