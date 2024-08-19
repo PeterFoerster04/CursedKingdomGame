@@ -17,7 +17,7 @@ UInventory::UInventory()
 	InitInventory();
 }
 
-
+//filling the array with amount of slots
 void UInventory::InitInventory()
 {
 	for (int i = 0; i < InventorySize; ++i)
@@ -26,6 +26,7 @@ void UInventory::InitInventory()
 	}
 }
 
+//tries to insert new item into the array, only works if array at index is empty
 void UInventory::AddItem(AItem* a_ItemToAdd)
 {
 	for (int i = 1; i < InventorySize; ++i)
@@ -41,6 +42,7 @@ void UInventory::AddItem(AItem* a_ItemToAdd)
 	UE_LOG(LogTemp, Log, TEXT("Inventory Full"));
 }
 
+//used to destroy empty bottle when obtaining potion
 void UInventory::RemoveItemInHand()
 {
 	ItemBundle[CurrentItemOutIndex]->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
@@ -48,6 +50,7 @@ void UInventory::RemoveItemInHand()
 	ItemBundle[CurrentItemOutIndex] = nullptr;
 }
 
+//hides item visually
 void UInventory::DeactivateItem(AItem* a_ItemToAdd)
 {
 
@@ -56,7 +59,7 @@ void UInventory::DeactivateItem(AItem* a_ItemToAdd)
 	a_ItemToAdd->SetActorHiddenInGame(true);
 	
 }
-
+//makes item visible again to hold in hand
 void UInventory::ActivateItem(bool a_bUseForce, FVector a_ThrowDirection, float a_Force)
 {
 	ItemBundle[CurrentItemOutIndex]->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
@@ -70,6 +73,7 @@ void UInventory::ActivateItem(bool a_bUseForce, FVector a_ThrowDirection, float 
 
 }
 
+//used to swap items without player noticing, for example obtaining potions
 void UInventory::ActivateItemHidden()
 {
 	ItemBundle[CurrentItemOutIndex]->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);

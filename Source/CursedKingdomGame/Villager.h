@@ -7,7 +7,7 @@
 #include "Villager.generated.h"
 
 class USphereComponent;
-
+//functionality implemented in blueprint subclasses 
 UCLASS()
 class CURSEDKINGDOMGAME_API AVillager : public ACharacter
 {

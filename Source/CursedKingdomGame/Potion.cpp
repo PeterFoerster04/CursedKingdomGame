@@ -24,11 +24,10 @@ void APotion::BeginPlay()
 //returns true if Healing was successful 
 bool APotion::HealVillager(AVillager* VillagerToHeal,EItemName NameOfPotion)
 {
-	
+	//only heal if villager was not already healed
 	if(bUsed) return false;
 	
 	if (VillagerToHeal->WasHealed) return false;
-
 
 	VillagerToHeal->WasHealed = true;
 	bUsed = true;
@@ -45,6 +44,7 @@ bool APotion::HealVillager(AVillager* VillagerToHeal,EItemName NameOfPotion)
 	if(NameOfPotion == EItemName::Schmiedintrank)
 	{
 		Instance->SaveGameObject->HealedSmith = true;
+		//thanks for importing meshes with different scales -_-
 		VillagerToHeal->GetMesh()->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
 	}
 	else if(NameOfPotion == EItemName::Vogelscheuchentrank)

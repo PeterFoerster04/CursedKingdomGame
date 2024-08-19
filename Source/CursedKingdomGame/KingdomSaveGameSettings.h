@@ -9,6 +9,7 @@
 /**
  * 
  */
+//container for settings values
 UCLASS()
 class CURSEDKINGDOMGAME_API UKingdomSaveGameSettings : public USaveGame
 {

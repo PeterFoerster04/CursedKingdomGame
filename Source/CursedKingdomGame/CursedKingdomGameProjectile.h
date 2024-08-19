@@ -8,7 +8,7 @@
 
 class USphereComponent;
 class UProjectileMovementComponent;
-
+//not used, came from unreal template
 UCLASS(config=Game)
 class ACursedKingdomGameProjectile : public AActor
 {

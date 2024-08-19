@@ -7,7 +7,7 @@
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 
-
+//toggles the icons of the points of interest in world
 void APOIMap::TogglePOIVisibility(bool SetVisible)
 {
 	if (ListOfPoints.IsEmpty()) return;
@@ -28,7 +28,7 @@ void APOIMap::TogglePOIVisibility(bool SetVisible)
 void APOIMap::BeginPlay()
 {
 	Super::BeginPlay();
-
+	//filling reference list with all found points of interests in world
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APointOfInterest::StaticClass(), ListOfPointActors);
 
 	for (AActor* Actor : ListOfPointActors)

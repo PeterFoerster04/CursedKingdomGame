@@ -20,7 +20,7 @@ public:
 	APointOfInterest();
 
 
-
+	//to display icon in world
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = Comps,meta=(AllowPrivateAccess))
 	UWidgetComponent* WidgetComp;
 

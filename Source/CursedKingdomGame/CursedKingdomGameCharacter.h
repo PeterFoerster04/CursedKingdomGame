@@ -26,23 +26,21 @@ class ACursedKingdomGameCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	/** Pawn mesh: 1st person view (arms; seen only by self) */
+	//components
 	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
 	USkeletalMeshComponent* Mesh1P;
 
-	/** First person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
-
-	/** MappingContext */
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
 
-	/** Jump Input Action */
+	//input actions
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
-
-	/** Move Input Action */
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
 
@@ -72,22 +70,20 @@ protected:
 public:
 	UPROPERTY()
 	UKingdomGameInstance* Instance = nullptr;
-		
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
 	UPROPERTY()
 	UWorld* CurrentWorld;
 
-	/** Bool for AnimBP to switch to another animation set */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
-	bool bHasRifle;
-
+	//input settings
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess))
 	float MouseSens = 1.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess))
 	float SprintMultiplier = 2.0f;
 
+	//cam settings
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
 	float WalkFOV = 90.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
@@ -95,6 +91,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
 	float FOVTransitionSpeed = 1.5f;
 
+	//was used for viewbobbing, disabled
 	FVector2D MovementVector;
 	FVector CameraStartLoc;
 
@@ -116,15 +113,15 @@ public:
 	float MaxSprintMovementSpeed;
 	bool bIsWalking;
 
+	//interact values
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
 	float ThrowForce = 5.0f;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess))
 	float MaxInteractRange = 500.0f;
 
+	//stamina stuff
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess))
 	bool bIsSprinting = false;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess))
 	float MaxStamina = 100.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess))
@@ -139,7 +136,10 @@ public:
 	float StaminaRechargeAmountUpgraded = 12.0f;
 
 	bool bIsOnCooldown = false;
+
 	bool bTestBool = false;
+
+	//item & state values
 	bool bIsFocusingItem = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Map, meta = (AllowPrivateAccess))
 	bool bHasMapInHand = false;
@@ -147,14 +147,16 @@ public:
 	bool bIsInWater = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Map, meta = (AllowPrivateAccess))
 	bool bPressedInteract = true;
+
+	//tutorial values
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Tuto, meta = (AllowPrivateAccess))
 	int CurrentTutoIndex = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Tuto, meta = (AllowPrivateAccess))
 	bool TutoBlocked = true;
 
+	//item & state values
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	bool bJustPickedUpItem = false;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	bool bPlayerInventoryFull = false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess))
@@ -164,6 +166,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	int ItemsInInventory = 0;
 
+	//member functions
 	void ManageStamina(float a_Delta);
 	void ManageHealth(float a_Delta);
 	UFUNCTION(BlueprintCallable)
@@ -176,11 +179,8 @@ public:
 	//but attaching actors in component classes caused issues
 	UFUNCTION(BlueprintCallable)
 	void SaveInventory();
-
 	void LoadInventory();
-
 	void TryToLoadSaveData();
-
 
 	void PickUpItem(AItem* Item);
 
@@ -194,6 +194,9 @@ public:
 	void HandleFogMooshroom(AItem* ItemToCheck, bool ActivateAbility);
 	void TryToUpgradeCauldron(ACauldron* Cauldron);
 
+
+	//temporarily used for holding items, while first person model is made
+	//edit: its 2 days before submission and the player model ist still missing -_- ...
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
 	USceneComponent* ItemStoreSpot;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess))
@@ -202,10 +205,9 @@ public:
 	UInventory* PlayerInventory;
 
 protected:
-	/** Called for movement input */
+	//movement callback functions
 	void Move(const FInputActionValue& Value);
 
-	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
 	void Sprint(const FInputActionValue& Value);
@@ -220,6 +222,7 @@ protected:
 
 	void ChangeFOV(float a_Delta);
 
+	//audio events
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnItemSwap();
 	UFUNCTION(BlueprintImplementableEvent)
@@ -234,7 +237,7 @@ protected:
 	FTimerHandle DeathTimerHandle;
 
 
-	//quick and dirty pls do not kill me :(
+	//used to check tutorial button presses
 	struct TutorialBools
 	{
 		bool pressedW;
@@ -245,14 +248,13 @@ protected:
 	TutorialBools TutoBoolsToCheck;
 
 protected:
-	// APawn interface
+	
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
-	// End of APawn interface
 
 public:
-	/** Returns Mesh1P subobject **/
+	
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
-	/** Returns FirstPersonCameraComponent subobject **/
+	
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
 };

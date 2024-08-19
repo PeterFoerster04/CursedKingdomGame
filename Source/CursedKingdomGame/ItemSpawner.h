@@ -29,12 +29,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
 	USceneComponent* SpawnerRootPos;
 
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setup, meta = (AllowPrivateAccess))
 	TSubclassOf<AItem> ItemToSpawn;
 
+	//ability to attach spawned item to a villager (for example scarecrow)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setup, meta = (AllowPrivateAccess))
 	AVillager* VillagerToAttachTo;
 
+	//spawn parameters
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setup, meta = (AllowPrivateAccess))
 	FVector RelativeActorAttachSpawnPos;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setup, meta = (AllowPrivateAccess))
@@ -46,6 +49,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setup, meta = (AllowPrivateAccess))
 	bool bUseMultiSpawn = false;
 
+	//maximum three customizable spawn positions
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
 	USceneComponent* PossibleSpawnPos1;
 
@@ -58,17 +62,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
 	USphereComponent* RespawnTrigger;
 
-
+	//container for current spawned items
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setup, meta = (AllowPrivateAccess))
 	TArray<AItem*> ListOfSpawnedItems;
 
-
+	//collection of all spawn positions for iterations
+	//used to destroy last items spawned
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setup, meta = (AllowPrivateAccess))
 	TArray<USceneComponent*> ListOfSpawnPositions;
 
+	//used to destroy last item if single spawn is activated
 	UPROPERTY()
 	AItem* LastItem;
 
+	//blueprint functions because to lazy to paste in overlap events again, again and again...
+	//please unreal provide a better way to use overlap functions in c++, much more comfortable in blueprints
 	UFUNCTION(BlueprintCallable)
 	void SpawnItem(bool ShouldAttach);
 	UFUNCTION(BlueprintCallable)

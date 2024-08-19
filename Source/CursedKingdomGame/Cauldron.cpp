@@ -51,7 +51,7 @@ void ACauldron::BeginPlay()
 	UE_LOG(LogTemp, Display, TEXT("All recipe Num: %i"), RecipeContainer->ListOfRecipes.Num())
 	IdleBrewer->ActivateSystem();
 
-
+	//trying to load saved variables 
 	Instance = Cast<UKingdomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(Instance != nullptr)
 	{
@@ -73,9 +73,17 @@ void ACauldron::OnSphereTriggerOverlap(UPrimitiveComponent* OverlappedComponent,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Display, TEXT("Overlap"))
+	//used to check if inserted actor is recipe item
 	ARecipeItem* PossibleItem = Cast<ARecipeItem>(OtherActor);
+	//used to check if actor is item but not recipe item
 	AItem* MaybeItem = Cast<AItem>(OtherActor);
-	
+
+	//four scenarios:
+	//1.Player overlaps: Do nothing
+	//2.Actor overlaps and is recipe item: Checking recipes
+	//3.Actor overlaps, is recipe item but cauldron is already brewing: just de-spawn item
+	//4.Actor is item but not recipe item: explode
+
 	if (OtherActor != nullptr && OtherActor->IsA(ACursedKingdomGameCharacter::StaticClass()))
 	{
 		UE_LOG(LogTemp,Display,TEXT("Player Overlap"))
@@ -155,28 +163,23 @@ void ACauldron::CheckItemForRecipe(ARecipeItem* Item)
 		CurrentPossibleRecipes.RemoveAt(RecipeIndices[i]);
 	}
 
-
+	//all possibilities gone -> explode
+	//only one recipe left& all ingredients inserted -> start brewing
 	UE_LOG(LogTemp, Display, TEXT("Number of available recipes: %i"), CurrentPossibleRecipes.Num())
 	if(CurrentPossibleRecipes.Num() == 0)
 	{
 		Explode();
 		DumpContents();
-		
 	}
 	else if(CurrentPossibleRecipes.Num() == 1&& CurrentPossibleRecipes[0]->Ingredients.Num() == CurrentItemsInCauldron.Num())
 	{
-		
 		UE_LOG(LogTemp, Display, TEXT("Brewing Potion"))
 		CurrentlyBrewing = true;
 		CurrentPotionInCauldron = CurrentPossibleRecipes[0]->ResultingPotion;
-		//DetermineCurrentPotion();
 		OnStartBrewing();
 		MakePotion();
 		DumpContents();
 	}
-
-
-	
 }
 
 void ACauldron::Explode()
@@ -188,7 +191,6 @@ void ACauldron::Explode()
 
 void ACauldron::DumpContents()
 {
-	
 	CurrentItemsInCauldron.Empty();
 	//reset all possibilities to default
 	CurrentPossibleRecipes = RecipeContainer->ListOfRecipes;
@@ -212,6 +214,7 @@ void ACauldron::SetPotionReady()
 void ACauldron::UpgradeCauldron()
 {
 	if(UpgradeMat != nullptr)Mesh->SetMaterial(0, UpgradeMat);
+	//halfing brew time if upgraded
 	PotionBrewingTime /= 2.0f;
 	IsUpgraded = true;
 	OnUpgradeCauldron();
@@ -223,7 +226,6 @@ void ACauldron::DeactivateItem(AItem* Item)
 	Item->Mesh->SetVisibility(false);
 	Item->SetActorEnableCollision(false);
 	Item->SetActorHiddenInGame(true);
-
 }
 
 void ACauldron::SpawnInsertSystem()
@@ -231,14 +233,13 @@ void ACauldron::SpawnInsertSystem()
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ItemInsertSystem, Mesh->GetComponentLocation()+FVector(0,0,65.0f));
 }
 
+//not used anymore
 void ACauldron::DetermineCurrentPotion()
 {
-
-
-	
-
 }
 
+//function is used to swap empty bottle in players hand with finished potion
+//is called when player is in range of cauldron and interacts with empty bottle in hand
 void ACauldron::SwapGlasForPotion(int CurrentOutIndex, ACursedKingdomGameCharacter* Player)
 {
 	

@@ -9,6 +9,7 @@
 /**
  * 
  */
+//subclass to differentiate between usual items and items used in recipes
 UCLASS()
 class CURSEDKINGDOMGAME_API ARecipeItem : public AKeyItem
 {

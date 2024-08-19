@@ -10,6 +10,7 @@
 /**
  * 
  */
+//container for game values to be saved
 UCLASS()
 class CURSEDKINGDOMGAME_API UKingdomSaveGame : public USaveGame
 {
