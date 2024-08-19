@@ -16,6 +16,8 @@ public:
 	// Sets default values for this component's properties
 	UAPlayerStats();
 
+
+	//Component not used anymore
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stats, meta = (AllowPrivateAccess))
 	float Lives = 2.0f;
 	float HP = 100.0f;

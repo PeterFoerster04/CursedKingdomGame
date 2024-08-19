@@ -25,6 +25,7 @@ public:
 	// Sets default values for this actor's properties
 	ACauldron();
 
+	//components
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
 		USphereComponent* ItemTrigger;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
@@ -36,21 +37,27 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
 	URecipeList* RecipeContainer;
+	//to calculate possibilities while inserting ingredients 
 	UPROPERTY()
 	TArray<URecipe*> CurrentPossibleRecipes;
 
 	//spawn this every time cauldron explodes
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
 	UNiagaraSystem* ExplosionSystem;
+	//spawn this on item insert
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
 	UNiagaraSystem* ItemInsertSystem;
+	//system spawns constantly
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
 	UNiagaraComponent* IdleBrewer;
+	//system is activated when correct recipe is inserted
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Comps, meta = (AllowPrivateAccess))
 	UNiagaraComponent* ProcessBrewer;
 
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effects, meta = (AllowPrivateAccess))
 		FVector ExplosionSpawnOffset;
+	//the actual item container of cauldron
 	UPROPERTY()
 	TArray<ARecipeItem*> CurrentItemsInCauldron;
 
@@ -62,9 +69,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Brewing, meta = (AllowPrivateAccess))
 	bool PotionReady;
 
+
 	FTimerHandle TimerHandle;
 
 	bool IsUpgraded = false;
+	//container for finished potions
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Brewing, meta = (AllowPrivateAccess))
 	TSubclassOf<AKeyItem> CurrentPotionInCauldron;
 
@@ -96,11 +105,12 @@ public:
 	void SpawnInsertSystem();
 	void DetermineCurrentPotion();
 
+	//is called when player interacts with cauldron while holding empty bottle
 	UFUNCTION(BlueprintCallable)
 	void SwapGlasForPotion(int CurrentOutIndex, ACursedKingdomGameCharacter* Player);
 
 
-
+	//events for audio implementation
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnItemInsert();
 	UFUNCTION(BlueprintImplementableEvent)

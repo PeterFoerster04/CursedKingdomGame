@@ -3,7 +3,7 @@
 
 #include "ItemSpawner.h"
 
-#include "IDetailTreeNode.h"
+
 #include "Item.h"
 #include "Villager.h"
 #include "Components/SphereComponent.h"
@@ -47,16 +47,17 @@ void AItemSpawner::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-
+//single item spawn has the ability to attach item to villager
 void AItemSpawner::SpawnItem(bool ShouldAttach)
 {
 	if (ItemToSpawn == nullptr) return;
 	if (ShouldAttach && VillagerToAttachTo == nullptr) return;
-
+	//killing old items first
 	FlushAllItems();
 
 	if(ShouldAttach)
 	{
+		//attaching spawned item onto villager if wanted
 		LastItem = GetWorld()->SpawnActor<AItem>(ItemToSpawn);
 		if (LastItem == nullptr) return;
 		LastItem->AttachToComponent(VillagerToAttachTo->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
@@ -66,16 +67,17 @@ void AItemSpawner::SpawnItem(bool ShouldAttach)
 	}
 	else
 	{
-		//attaching disabled -> spawn at pos 1
+		//attaching disabled -> just spawn at pos 1
 		LastItem = GetWorld()->SpawnActor<AItem>(ItemToSpawn, PossibleSpawnPos1->GetComponentLocation(), FRotator::ZeroRotator);
 		ListOfSpawnedItems.Add(LastItem);
 	}
 }
-
+//multi item spawn, destroys all last spawned items unless picked up
+//spawns new items all at spawn locations
 void AItemSpawner::SpawnItems()
 {
 	if (ItemToSpawn == nullptr) return;
-
+	//killing old items first
 	FlushAllItems();
 
 	for (int i = 0; i < ListOfSpawnPositions.Num(); ++i)
@@ -112,7 +114,7 @@ void AItemSpawner::FlushAllItems()
 	}
 	
 }
-
+//only for single spawn
 void AItemSpawner::DeleteLastSpawnedItem()
 {
 	if (LastItem == nullptr) return;

@@ -9,6 +9,7 @@
 
 
 class URecipe;
+//container class for cauldron 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CURSEDKINGDOMGAME_API URecipeList : public UActorComponent
